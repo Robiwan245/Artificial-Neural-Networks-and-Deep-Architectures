@@ -7,8 +7,7 @@ import matplotlib.pyplot as plt
 class perceptron:
 
     def __init__(self, X) -> None:
-        self.weights = np.ones(len(X)+1)
-        print(np.shape(self.weights))
+        self.weights = np.zeros(len(X)+1)
 
     def activation(self, x):
         return 1 if x >= 0 else 0
@@ -22,8 +21,8 @@ class perceptron:
         ax.scatter(classB[0,:], classB[1,:], c = "green")
         x0_1 = np.amin(X_train[:, 0])
         x0_2 = np.amax(X_train[:, 0])
-        x1_1 = (-weights[1] * x0_1 - weights[0]) / weights[2]
-        x1_2 = (-weights[1] * x0_2 - weights[0]) / weights[2]
+        x1_1 =  x0_1 
+        x1_2 =  x0_2 
         line1, = ax.plot([x0_1, x0_2], [x1_1, x1_2], "k")
 
         for _ in range(epochs):
@@ -32,10 +31,10 @@ class perceptron:
                 predLabels = self.predict(x)
                 if delta:
                     error = targets[index] - self.weights.T@x
-                    self.weights -= learning_rate * (self.weights@x - error) * x.T
+                    self.weights += -learning_rate * (self.weights@x - error) * x.T
                 else:
                     error = targets[index] - predLabels
-                    self.weights = self.weights + learning_rate * error * x
+                    self.weights += learning_rate * error * x
                 
             weights = model.get_weights()
             x0_1_new = np.amin(X_train[:, 0])
@@ -62,7 +61,7 @@ class perceptron:
 X_train, labels_train, classA, classB = data.generate_linearly_separated_data()
 
 model = perceptron(X_train.T)
-model.fit(X_train, labels_train, 0.01, 100, classA, classB, True)
+model.fit(X_train, labels_train, 0.01, 100, classA, classB, False)
 
 
 
