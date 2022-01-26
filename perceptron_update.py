@@ -27,14 +27,14 @@ class perceptron:
 
         for _ in range(epochs):
             for index in range(len(targets)):
-                x = np.insert(X[index], 0, 1)
-                predLabels = self.predict(x)
+                x = np.insert(X[index], 0, 1) # Add bias
                 if delta:
-                    error = targets[index] - self.weights.T@x
-                    self.weights += -learning_rate * (self.weights@x - error) * x.T
+                    error = self.weights@x - targets[index]
+                    self.weights += -learning_rate * error * x.T
                 else:
+                    predLabels = self.predict(x)
                     error = targets[index] - predLabels
-                    self.weights += learning_rate * error * x
+                    self.weights += learning_rate * error * x.T
                 
             weights = model.get_weights()
             x0_1_new = np.amin(X_train[:, 0])
@@ -61,7 +61,7 @@ class perceptron:
 X_train, labels_train, classA, classB = data.generate_linearly_separated_data()
 
 model = perceptron(X_train.T)
-model.fit(X_train, labels_train, 0.01, 100, classA, classB, False)
+model.fit(X_train, labels_train, 0.01, 100, classA, classB, True)
 
 
 

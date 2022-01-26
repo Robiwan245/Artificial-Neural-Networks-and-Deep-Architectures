@@ -40,16 +40,11 @@ def generate_linearly_separated_data():
     X_test = np.concatenate((classA_test, classB_test))
     Y_test = np.concatenate((classA_labels_test, classB_labels_test))
     
-    ones = np.ones((2, n))
-    ones_trans = np.transpose(ones)
-
-    ones = np.ones((2, n))
-    ones_trans = np.transpose(ones)
 
     classA_trans = np.transpose(classA)
     classB_trans = np.transpose(classB)
 
-    X = np.concatenate((classA_trans, classB_trans, ones_trans))
+    X = np.concatenate((classA_trans, classB_trans))
     Y = np.concatenate((classA_labels, classB_labels))
 
     return X, Y, classA, classB
