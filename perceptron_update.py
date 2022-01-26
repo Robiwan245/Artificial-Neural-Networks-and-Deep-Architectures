@@ -57,7 +57,7 @@ class perceptron:
 X_train, Y_train, classA, classB = data.generate_linearly_separated_data()
 
 model = perceptron(X_train.T)
-model.fit(X_train, Y_train, 0.001, 100,classA, classB)
+model.fit(X_train, Y_train, 0.01, 100,classA, classB)
 
 
 
