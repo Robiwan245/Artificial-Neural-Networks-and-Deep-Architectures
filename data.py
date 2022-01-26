@@ -21,8 +21,8 @@ def generate_linearly_separated_data():
 
     classA_test = np.zeros((2, n))
     classB_test = np.zeros((2, n))
-    classA_labels_test = np.zeros(2*n)
-    classB_labels_test = np.ones(2*n)
+    classA_labels_test = np.zeros(n)
+    classB_labels_test = np.ones(n)
 
     classA_test[0,:] = np.random.normal(size=n) * sigmaA + mA[0]
     classA_test[1,:] = np.random.normal(size=n) * sigmaA + mA[1]
