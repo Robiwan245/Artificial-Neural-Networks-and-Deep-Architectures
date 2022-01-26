@@ -45,10 +45,18 @@ class perceptron:
     def get_weights(self):
         return self.weights
 
-X_train, Y_train, classA, classB = data.generate_linearly_separated_data()
+seqential_mode = True
+batch_mode = False
+
+if seqential_mode:
+    X_train, Y_train, classA, classB = data.generate_linearly_separated_data()
+
+elif batch_mode:
+    X_train, Y_train, classA, classB = data.generate_linearly_separated_data_batch()
+    print(len(X_train[0]))
 
 model = perceptron()
-model.fit(X_train, Y_train, 0.1, 10)
+model.fit(X_train, Y_train, 0.5, 100)
 
 weights = model.get_weights()
 
@@ -56,12 +64,31 @@ plt.figure(figsize=(10, 10))
 plt.scatter(classA[0,:], classA[1,:], c = "red")
 plt.scatter(classB[0,:], classB[1,:], c = "green")
 
-x0_1 = np.amin(X_train[:, 0])
-x0_2 = np.amax(X_train[:, 0])
+if seqential_mode:
 
-x1_1 = (-weights[0] * x0_1 - model.bias) / weights[1]
-x1_2 = (-weights[0] * x0_2 - model.bias) / weights[1]
+    x0_1 = np.amin(X_train[:, :])
+    x0_2 = np.amax(X_train[:, :])
 
-plt.plot([x0_1, x0_2], [x1_1, x1_2], "k")
+    x1_1 = (-weights[0] * x0_1 - model.bias) / weights[1]
+    x1_2 = (-weights[0] * x0_2 - model.bias) / weights[1]
+
+    plt.plot([x0_1, x0_2], [x1_1, x1_2], "k")
+
+elif batch_mode:
+
+    # for i in np.linspace(np.amin(X_train[:,:]), np.amax(X_train[:,:])):
+    #         slope = -(weights[0]/weights[2] - model.bias)/(weights[0]/weights[1])  
+    #         intercept = -weights[0]/weights[2]
+
+    #         y = (slope*i) + intercept
+    #         plt.plot(i, y,'ko')
+
+    x0_1 = np.amin(X_train[:, :])
+    x0_2 = np.amax(X_train[:, :])
+
+    x1_1 = (-weights[0]/weights[2] - model.bias)/(weights[0]/weights[1])
+    x1_2 = (-weights[0] - model.bias)/weights[2]
+
+    plt.plot([x0_1, x0_2], [x1_1, x1_2], "k")
 
 plt.show()
