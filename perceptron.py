@@ -6,13 +6,15 @@ class perceptron:
 
     def __init__(self) -> None:
         self.weights = []
+        self.bias = 0.0
 
     def activation(self, data):
-        value = np.dot(self.weights, data)
+        value = np.dot(self.weights, data) + self.bias
         return 1 if value >= 0 else 0
 
     def fit(self, X, y, learning_rate, epochs):
         self.weights = [0.0 for i in range(len(X[0]))]
+        self.bias = 0.0
 
         for epoch in range(epochs):
             for index in range(len(X)):
@@ -24,6 +26,7 @@ class perceptron:
                     error = y[index] - predicted
                     for j in range(len(x)):
                         self.weights[j] = self.weights[j]  + learning_rate * error * x[j]
+                        self.bias += learning_rate * error
 
     def predict(self, x_test):
         predicted = []
@@ -45,7 +48,7 @@ class perceptron:
 X_train, Y_train, classA, classB = data.generate_linearly_separated_data()
 
 model = perceptron()
-model.fit(X_train, Y_train, 0.5, 10)
+model.fit(X_train, Y_train, 0.1, 10)
 
 weights = model.get_weights()
 
@@ -56,8 +59,8 @@ plt.scatter(classB[0,:], classB[1,:], c = "green")
 x0_1 = np.amin(X_train[:, 0])
 x0_2 = np.amax(X_train[:, 0])
 
-x1_1 = (-weights[0] * x0_1) / weights[1]
-x1_2 = (-weights[0] * x0_2) / weights[1]
+x1_1 = (-weights[0] * x0_1 - model.bias) / weights[1]
+x1_2 = (-weights[0] * x0_2 - model.bias) / weights[1]
 
 plt.plot([x0_1, x0_2], [x1_1, x1_2], "k")
 
