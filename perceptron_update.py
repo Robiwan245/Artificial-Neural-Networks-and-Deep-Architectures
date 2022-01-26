@@ -29,8 +29,8 @@ class perceptron:
             for index in range(len(targets)):
                 x = np.insert(X[index], 0, 1) # Add bias
                 if delta:
-                    error = self.weights@x - targets[index]
-                    self.weights += -learning_rate * error * x.T
+                    error = targets[index] - self.weights@x 
+                    self.weights += learning_rate * error * x.T
                 else:
                     predLabels = self.predict(x)
                     error = targets[index] - predLabels
