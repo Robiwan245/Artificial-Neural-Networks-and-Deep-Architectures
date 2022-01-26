@@ -8,24 +8,39 @@ class perceptron:
         self.weights = []
         self.bias = 0.0
 
+    def perception_rule(self, learning_rate, error, x, j):
+        self.weights[j] = self.weights[j]  + learning_rate * error * x[j]
+
+    def delta_rule(self, learning_rate, x, j, target):
+        self.weights[j] = learning_rate * x[j] * np.dot((np.dot(self.weights[j], x[j]) - target), np.transpose(x[j]))
+
     def activation(self, data):
         value = np.dot(self.weights, data) + self.bias
         return 1 if value >= 0 else 0
 
-    def fit(self, X, y, learning_rate, epochs):
+    def fit(self, X, y, learning_rate, epochs, batch_mode, delta):
         self.weights = [0.0 for i in range(len(X[0]))]
         self.bias = 0.0
 
+        if batch_mode:
+            lent = len(X)
+        else:
+            lent = len(y)
+
         for epoch in range(epochs):
-            for index in range(len(X)):
+            for index in range(lent):
                 x = X[index]
                 predicted = self.activation(x)
                 if y[index] == predicted:
                     pass
                 else:
-                    error = y[index] - predicted
+                    target = y[index]
+                    error = target - predicted
                     for j in range(len(x)):
-                        self.weights[j] = self.weights[j]  + learning_rate * error * x[j]
+                        if delta:
+                            self.delta_rule(learning_rate, x, j, target)
+                        else:
+                            self.perception_rule(learning_rate, error, x, j)
                         self.bias += learning_rate * error
 
     def predict(self, x_test):
@@ -47,16 +62,16 @@ class perceptron:
 
 seqential_mode = True
 batch_mode = False
+delta = True
 
 if seqential_mode:
     X_train, Y_train, classA, classB = data.generate_linearly_separated_data()
 
 elif batch_mode:
     X_train, Y_train, classA, classB = data.generate_linearly_separated_data_batch()
-    print(len(X_train[0]))
 
 model = perceptron()
-model.fit(X_train, Y_train, 0.5, 100)
+model.fit(X_train, Y_train, 0.5, 10, batch_mode, delta)
 
 weights = model.get_weights()
 
@@ -76,19 +91,19 @@ if seqential_mode:
 
 elif batch_mode:
 
-    # for i in np.linspace(np.amin(X_train[:,:]), np.amax(X_train[:,:])):
-    #         slope = -(weights[0]/weights[2] - model.bias)/(weights[0]/weights[1])  
-    #         intercept = -weights[0]/weights[2]
+    for i in np.linspace(np.amin(X_train[:,:]), np.amax(X_train[:,:])):
+            slope = -(weights[0]/weights[2] - model.bias)/(weights[0]/weights[1])  
+            intercept = -weights[0]/weights[2]
 
-    #         y = (slope*i) + intercept
-    #         plt.plot(i, y,'ko')
+            y = (slope*i) + intercept
+            plt.plot(i, y,'ko')
 
-    x0_1 = np.amin(X_train[:, :])
-    x0_2 = np.amax(X_train[:, :])
+    # x0_1 = np.amin(X_train[:, :])
+    # x0_2 = np.amax(X_train[:, :])
 
-    x1_1 = (-weights[0]/weights[2] - model.bias)/(weights[0]/weights[1])
-    x1_2 = (-weights[0] - model.bias)/weights[2]
+    # x1_1 = (-weights[0]/weights[2] - model.bias)/(weights[0]/weights[1])
+    # x1_2 = (-weights[0] - model.bias)/weights[2]
 
-    plt.plot([x0_1, x0_2], [x1_1, x1_2], "k")
+    # plt.plot([x0_1, x0_2], [x1_1, x1_2], "k")
 
 plt.show()
