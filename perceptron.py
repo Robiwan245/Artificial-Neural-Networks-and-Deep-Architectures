@@ -60,12 +60,12 @@ class perceptron:
     def get_weights(self):
         return self.weights
 
-seqential_mode = False
-batch_mode = True
+seqential_mode = True
+batch_mode = False
 delta = True
 perceptron_learning = False
 
-learning_rate = 0.5
+learning_rate = 0.01
 
 if seqential_mode and delta:
     X_train, Y_train, classA, classB = data.generate_linearly_separated_data()
