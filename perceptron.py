@@ -8,14 +8,13 @@ class perceptron:
         self.weights = []
 
     def activation(self, data):
-        value = np.dot(self.weights, data.T)
+        value = np.dot(self.weights, data)
         return 1 if value >= 0 else 0
 
     def fit(self, X, y, learning_rate, epochs):
         self.weights = [0.0 for i in range(len(X[0]))]
 
         for epoch in range(epochs):
-            sum_error = 0.0
             for index in range(len(X)):
                 x = X[index]
                 predicted = self.activation(x)
@@ -23,7 +22,6 @@ class perceptron:
                     pass
                 else:
                     error = y[index] - predicted
-                    sum_error += error
                     for j in range(len(x)):
                         self.weights[j] = self.weights[j]  + learning_rate * error * x[j]
 
@@ -44,24 +42,23 @@ class perceptron:
     def get_weights(self):
         return self.weights
 
-X_train, Y_train, X_test, Y_test = data.generate_linearly_separated_data()
+X_train, Y_train, classA, classB = data.generate_linearly_separated_data()
 
 model = perceptron()
-model.fit(X_train, Y_train, 0.1, 10)
+model.fit(X_train, Y_train, 0.5, 10)
 
 weights = model.get_weights()
 
 plt.figure(figsize=(10, 10))
-plt.scatter(X_train[0,:], X_train[1,:], c = "red")
-plt.scatter(X_train[2,:], X_train[3,:], c = "green")
+plt.scatter(classA[0,:], classA[1,:], c = "red")
+plt.scatter(classB[0,:], classB[1,:], c = "green")
 
-for i in np.linspace(np.amin(X_train[:,:]), np.amax(X_train[:,:])):
+x0_1 = np.amin(X_train[:, 0])
+x0_2 = np.amax(X_train[:, 0])
 
-    slope = -(weights[0]/weights[2])/(weights[0]/weights[1])  
-    intercept = -weights[0]/weights[2]
+x1_1 = (-weights[0] * x0_1) / weights[1]
+x1_2 = (-weights[0] * x0_2) / weights[1]
 
-    y = (slope*i) + intercept
-    
-    plt.plot(i, y, 'ko')
+plt.plot([x0_1, x0_2], [x1_1, x1_2], "k")
 
 plt.show()
