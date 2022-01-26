@@ -67,6 +67,6 @@ class perceptron:
         return self.weights
 
 model = perceptron()
-model.fit(0.01, 100)
+model.fit(0.001, 100)
 
 time.sleep(100)
