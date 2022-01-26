@@ -11,8 +11,8 @@ def generate_linearly_separated_data():
 
     classA = np.zeros((2, n))
     classB = np.zeros((2, n))
-    classA_labels = np.zeros(2*n)
-    classB_labels = np.ones(2*n)
+    classA_labels = np.zeros(n)
+    classB_labels = np.ones(n)
 
     classA[0,:] = np.random.normal(size=n) * sigmaA + mA[0]
     classA[1,:] = np.random.normal(size=n) * sigmaA + mA[1]
@@ -64,8 +64,8 @@ def generate_linearly_separated_data_batch():
 
     classA = np.zeros((2, n))
     classB = np.zeros((2, n))
-    classA_labels = np.zeros(2*n)
-    classB_labels = np.ones(2*n)
+    classA_labels = np.zeros(n)
+    classB_labels = np.ones(n)
 
     classA[0,:] = np.random.normal(size=n) * sigmaA + mA[0]
     classA[1,:] = np.random.normal(size=n) * sigmaA + mA[1]
