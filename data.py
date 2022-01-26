@@ -43,6 +43,9 @@ def generate_linearly_separated_data():
     ones = np.ones((2, n))
     ones_trans = np.transpose(ones)
 
+    ones = np.ones((2, n))
+    ones_trans = np.transpose(ones)
+
     classA_trans = np.transpose(classA)
     classB_trans = np.transpose(classB)
 
