@@ -11,7 +11,7 @@ class perceptron:
         self.bias = 0.0
 
     def perception_rule(self, learning_rate, error, x, j):
-        self.weights[j] = self.weights[j] + learning_rate * error * x[j]
+        self.weights[j] = self.weights[j]  + learning_rate * error * x[j]
 
     def delta_rule(self, learning_rate, x, i, target):
         for j in range(2):
@@ -60,51 +60,29 @@ class perceptron:
     def get_weights(self):
         return self.weights
 
-seqential_mode = False
-batch_mode = True
+seqential_mode = True
+batch_mode = False
 delta = True
 perceptron_learning = False
-linearly_separable = False
-new_data = True
-
-remove_25 = False
-remove_50_A = False
-remove_50_B = False
-a_20_80 = True
 
 learning_rate = 0.01
-iter = 100
 
 if seqential_mode and delta:
-    if linearly_separable:
-        X_train, Y_train, classA, classB = data.generate_linearly_separated_data(perceptron_learning, seqential_mode, batch_mode)
-    elif not linearly_separable:
-        X_train, Y_train, classA, classB = data.generate__non_linearly_separated_data(perceptron_learning, seqential_mode, batch_mode)
+    X_train, Y_train, classA, classB = data.generate_linearly_separated_data()
     model = perceptron(X_train)
-    for _ in range(iter):
-        for i in range(len(Y_train)):
-            weights = model.delta_rule(learning_rate, X_train[i], i, Y_train[i])
+    for i in range(len(Y_train)):
+        weights = model.delta_rule(learning_rate, X_train[i], i, Y_train[i])
 
 elif batch_mode and delta:
-    if linearly_separable:
-        X_train, Y_train, classA, classB = data.generate_linearly_separated_data(perceptron_learning, seqential_mode, batch_mode)
-    elif not linearly_separable and not new_data:
-        X_train, Y_train, classA, classB = data.generate__non_linearly_separated_data(perceptron_learning, seqential_mode, batch_mode)
-    elif not linearly_separable and new_data:
-        X_train, Y_train, classA, classB = data.generate__non_linearly_separated_data2(perceptron_learning, seqential_mode, batch_mode, remove_25, remove_50_A, remove_50_B, a_20_80)
+    X_train, Y_train, classA, classB = data.generate_linearly_separated_data_batch()
     model = perceptron(X_train)
-    for _ in range(iter):
-        weights = model.delta_rule_batch(learning_rate, X_train, 1, Y_train)
+    weights = model.delta_rule_batch(learning_rate, X_train, 1, Y_train)
 
 elif perceptron_learning:
-    if linearly_separable:
-        X_train, Y_train, classA, classB = data.generate_linearly_separated_data(perceptron_learning, seqential_mode, batch_mode)
-    elif not linearly_separable:
-        X_train, Y_train, classA, classB = data.generate__non_linearly_separated_data(perceptron_learning, seqential_mode, batch_mode)
+    X_train, Y_train, classA, classB = data.generate_linearly_separated_data()
     model = perceptron(X_train)
-    for _ in range(iter):
-        model.fit(X_train, Y_train, learning_rate, 10, batch_mode, delta)
-        weights = model.get_weights()
+    model.fit(X_train, Y_train, learning_rate, 10, batch_mode, delta)
+    weights = model.get_weights()
 
 
 plt.figure(figsize=(10, 10))
