@@ -13,16 +13,21 @@ def generate_linearly_separated_data(perception, seq, batch):
     classA = np.zeros((2, n))
     classB = np.zeros((2, n))
     if perception:
-        classA_labels = np.zeros(n)
-        classB_labels = np.ones(n)
+        classA_labels = np.ones(n)
+        classB_labels = -np.ones(n)
     elif seq or batch:
-        classA_labels = np.ones(int(n/2))
-        classB_labels = -np.ones(int(n/2))
+        classA_labels = np.ones(n)
+        classB_labels = -np.ones(n)
 
     classA[0,:] = np.random.normal(size=n) * sigmaA + mA[0]
     classA[1,:] = np.random.normal(size=n) * sigmaA + mA[1]
     classB[0,:] = np.random.normal(size=n) * sigmaB + mB[0]
     classB[1,:] = np.random.normal(size=n) * sigmaB + mB[1]
+
+    # classA[0,:] = np.random.normal(size=n) * sigmaA + 4.8
+    # classA[1,:] = np.random.normal(size=n) * sigmaA + 4.6
+    # classB[0,:] = np.random.normal(size=n) * sigmaB + (0.6)
+    # classB[1,:] = np.random.normal(size=n) * sigmaB + (0.8)
     
     ones = np.ones((2, n))
 
@@ -33,6 +38,9 @@ def generate_linearly_separated_data(perception, seq, batch):
 
         X = np.concatenate((classA_trans, classB_trans, ones_trans))
     elif batch:
+        classA_labels = np.ones(int(n/2))
+        classB_labels = -np.ones(int(n/2))
+
         X = np.concatenate((classA, classB, ones))
     Y = np.concatenate((classA_labels, classB_labels))
 

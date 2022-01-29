@@ -7,8 +7,9 @@ import time
 class perceptron:
 
     def __init__(self, X_train) -> None:
+        #self.weights = [0.001 for i in range(len(X_train) + 1)]
         self.weights = [0.001 for i in range(len(X_train))]
-        #self.weights = [np.random.rand for i in range(len(X_train))]
+        #self.weights = [np.random.rand() for i in range(len(X_train))]
         #self.weights = [100 for i in range(len(X_train))]
         self.bias = 0.0
         self.sum = 0
@@ -17,19 +18,29 @@ class perceptron:
         self.weights[j] = self.weights[j] + learning_rate * error * x[j]
 
     def delta_rule(self, learning_rate, x, i, target):
-        for j in range(2):
-            self.weights[i] = self.weights[i] - learning_rate * np.dot((np.dot(self.weights[i], x[j]) - target), np.transpose(x[j]))
-            self.sum += self.compute_mse((np.dot(self.weights[i], x[j])), target)
+        np.insert(x, 0, 1)
+        self.weights[i] = self.weights[i] - learning_rate * np.dot((np.dot(self.weights[i], x) - target), np.transpose(x))
+        self.sum += self.compute_mse((np.dot(self.weights[i], x)), target)
         return self.weights
 
     def delta_rule_batch(self, learning_rate, x, j, target):
         self.weights += -learning_rate * np.dot((np.dot(self.weights, x) - target), np.transpose(x))
+        # for i in range(len(x)):
+        #     x_cord = x[0][i]
+        #     y_cord = x[1][i]
+
+        #     self.sum += self.compute_mse((np.dot(self.weights[j], [x_cord, y_cord])), target[i])
+            
+        #mse = (np.square(np.dot(self.weights, x) - target)).mean(axis=None)
+        # for i in range(len(self.weights)):
+        #     self.weights[i] = self.weights[i] + 1
+        # print(self.weights)
         return self.weights
 
     def activation(self, data):
         value = np.dot(self.weights, data) + self.bias
         if perceptron_learning == True:
-            return 1 if value >= 0 else 0
+            return 1 if value >= 0 else -1
         else:
             return 1 if value >= 0 else -1
 
@@ -74,10 +85,10 @@ class perceptron:
     def compute_mse(self, y, t):
         return np.sum(np.square(y - t))
 
-seqential_mode = True
-batch_mode = False
+seqential_mode = False
+batch_mode = True
 delta = True
-perceptron_learning = True
+perceptron_learning = False
 linearly_separable = True
 new_data = False
 
@@ -86,8 +97,8 @@ remove_50_A = False
 remove_50_B = False
 a_20_80 = False
 
-learning_rate = 0.01
-iter = 10
+learning_rate = 0.1
+iter = 50
 MSE_delta = []
 MSE_perceptron = []
 
@@ -104,6 +115,21 @@ if seqential_mode and delta:
         MSE_delta.append(model.sum /len(X_train))
         print("MSE for delta rule in online mode epoch " + str(epoch) + ": " + str(model.sum /len(X_train)))
 
+# plt.figure(figsize=(10, 10))
+# plt.xlabel("x-coordinates of the data")
+# plt.ylabel("y-coordinates of the data")
+# plt.scatter(classA[0,:], classA[1,:], c = "red")
+# plt.scatter(classB[0,:], classB[1,:], c = "green")
+
+# x0_1 = np.amin(X_train[:, :])
+# x0_2 = np.amax(X_train[:, :])
+
+# x1_1 = (-weights[0] * x0_1 - model.bias) / weights[1]
+# x1_2 = (-weights[0] * x0_2 - model.bias) / weights[1]
+
+# plt.plot([x0_1, x0_2], [x1_1, x1_2], "k")
+# plt.show()
+
 if batch_mode and delta:
     if linearly_separable:
         X_train, Y_train, classA, classB = data.generate_linearly_separated_data(perceptron_learning, seqential_mode, batch_mode)
@@ -117,13 +143,13 @@ if batch_mode and delta:
         weights = model.delta_rule_batch(learning_rate, X_train, 10, Y_train)
 
 if perceptron_learning:
-    if linearly_separable:
-        X_train, Y_train, classA, classB = data.generate_linearly_separated_data(perceptron_learning, seqential_mode, batch_mode)
-    elif not linearly_separable:
-        X_train, Y_train, classA, classB = data.generate__non_linearly_separated_data(perceptron_learning, seqential_mode, batch_mode)
+    #if linearly_separable:
+        #X_train, Y_train, classA, classB = data.generate_linearly_separated_data(perceptron_learning, seqential_mode, batch_mode)
+    #elif not linearly_separable:
+        #X_train, Y_train, classA, classB = data.generate__non_linearly_separated_data(perceptron_learning, seqential_mode, batch_mode)
     model = perceptron(X_train)
     #for _ in range(iter):
-    model.fit(X_train, Y_train, learning_rate, 10, batch_mode, delta)
+    model.fit(X_train, Y_train, learning_rate, iter, batch_mode, delta)
     weights = model.get_weights()
 
 plt.figure(figsize=(10, 10))
@@ -144,6 +170,7 @@ plt.show()
 plt.figure(figsize=(10, 10))
 plt.xlabel("Number of epochs")
 plt.ylabel("Mean square error")
-plt.plot(MSE_delta)
-plt.plot(MSE_perceptron)
+plt.plot(MSE_delta, label = "MSE for delta rule")
+plt.plot(MSE_perceptron, label = "MSE for perceptron rule")
+plt.legend(framealpha=1, frameon=True)
 plt.show()
