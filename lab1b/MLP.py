@@ -41,24 +41,50 @@ class MLP:
             theta2 += alpha*d1_theta
         
         return theta1, theta2
+    
+    def error_testing(self, X, labels, num_hidden_list, alpha, epochs):
+        class_errors = [] # np.mean(abs(np.sign(forward)-target)/2)
+        MSEs = [] # np.mean((forward-target)**2) 
 
-    def test_plot(self):
-        classA, classB, labelsA, labelsB = data.xor()
+        for num_hidden in num_hidden_list:
+            theta1 = self.init_theta(num_hidden, X.shape[0]+1)
+            theta2 = self.init_theta( X.shape[0], num_hidden+1)
+            new_theta1, new_theta2 = self.backprop(X, labels, theta1, theta2, num_hidden, alpha, epochs=epochs)
 
-        plt.figure(figsize=(10, 10))
-        plt.xlabel("x-coordinates of the data")
-        plt.ylabel("y-coordinates of the data")
-        plt.scatter(classA[0,:], classA[1,:], c = "red")
-        plt.scatter(classB[0,:], classB[1,:], c = "green")
-        plt.plot(labelsA, labelsB, "k")
+            # Error testing
+            predicted = self.forward(X, new_theta1, new_theta2)
+            classification_error = np.mean(abs(np.sign(predicted)-labels)/2)
+            class_errors.append(classification_error)
+            MSE = np.mean((predicted-labels)**2)
+            MSEs.append(MSE) 
+        
+        fig = plt.figure(figsize=(10,5))
+        for num_hidden in num_hidden_list:
+            fig.add_subplot(121)
+            plt.plot(num_hidden_list,class_errors)
+            plt.title("Classification error")
+            plt.xlabel("Number of hidden Nodes")
+            fig.add_subplot(122)
+            plt.plot(num_hidden_list,MSEs)
+            plt.title("MSE")
+            plt.xlabel("Number of hidden Nodes")
+            plt.legend()
+            plt.show()
 
-        plt.show()
+    def forward(self, X, theta1, theta2):
+        X = self.add_bias(X)
+        H = self.add_bias(self.transfer(theta1@X))
+        O = self.transfer(theta2@H)
+
+        return O
+
+       
 
 MLP_model = MLP()
 X, T = data.xor()
 num_hidden = 2
-epochs = 100
-alpha = 0.1
+epochs = 500
+alpha = 0.001
 theta1 = MLP_model.init_theta(num_hidden, X.shape[0]+1)
 theta2 = MLP_model.init_theta( X.shape[0], num_hidden+1)
 
@@ -68,8 +94,11 @@ w11, w12, bias1 = new_theta1[0,0], new_theta1[0,1], new_theta1[0,2]
 w21, w22, bias2 = new_theta1[1,0], new_theta1[1,1], new_theta1[1,2]
 
 plt.scatter(X[0,:], X[1,:], c=T[:])
-x = np.linspace(-2, 2,1000)
+x = np.linspace(-2, 2, 1000)
 plt.plot(x, -(w11*x+bias1)/w12, label="Hidden layer 1")
 plt.plot(x, -(w21*x+bias2)/w22, label="Hidden layer 2")
 plt.legend()
 plt.show()
+
+num_hidden_list = range(2,21)
+MLP_model.error_testing(X,T,num_hidden_list,alpha,epochs)
