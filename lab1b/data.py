@@ -18,3 +18,9 @@ def generate_not_linearly_separable_data():
     classB[1,:] = np.random.normal(size=n) * sigmaB + mB[1]
 
     return classA, classB, classA_labels, classB_labels
+
+def xor():
+    X = np.array([[-1,1,-1,1], [-1, -1,1,1]])
+    T = np.array([-1,1,1,-1])
+
+    return X, T
