@@ -85,8 +85,8 @@ class MLP:
 MLP_model = MLP()
 X, T,a,b = data.generate_not_linearly_separable_data()
 num_hidden = 2
-epochs = 50
-alpha = 0.001
+epochs = 10000
+alpha = 0.01
 theta1 = MLP_model.init_theta(num_hidden, X.shape[0]+1)
 theta2 = MLP_model.init_theta(X.shape[0], num_hidden+1)
 
