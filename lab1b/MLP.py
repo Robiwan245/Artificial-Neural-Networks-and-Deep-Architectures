@@ -9,7 +9,7 @@ class MLP:
 
     def init_theta(self,n_output, n_input):
         np.random.seed(1)
-        weights = np.random.normal(size=(n_output,n_input), loc=0, scale=1) 
+        weights = np.random.normal(size=(n_output,n_input)) 
     
         return(weights)
 
@@ -85,8 +85,8 @@ class MLP:
 MLP_model = MLP()
 X, T,a,b = data.generate_not_linearly_separable_data()
 num_hidden = 2
-epochs = 10000
-alpha = 0.01
+epochs = 50
+alpha = 0.001
 theta1 = MLP_model.init_theta(num_hidden, X.shape[0]+1)
 theta2 = MLP_model.init_theta(X.shape[0], num_hidden+1)
 
