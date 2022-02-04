@@ -7,8 +7,8 @@ class MLP:
     def __init__(self) -> None:
         pass
 
-    def init_theta(self,n_output, n_input, seed=1):
-        np.random.seed(seed)
+    def init_theta(self,n_output, n_input):
+        np.random.seed(1)
         weights = np.random.normal(size=(n_output,n_input), loc=0, scale=1) 
     
         return(weights)
