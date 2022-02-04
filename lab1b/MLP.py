@@ -16,27 +16,29 @@ class MLP:
         return np.concatenate((input, np.ones(shape=(1,n))))
 
     def transfer(self, x):
-        return (2/(1+np.exp(-x))-1)
+        return (2/(1+np.exp(-x)))-1
 
-    def gradient_transfer(self, x):
-        return ((1+self.transfer(x)*1-self.transfer(x))/2)
+    def gradient_transfer(self, x_out):
+        return ((1+x_out)*(1-x_out))/2
 
-    def backprop(self,X, labels, theta1, theta2, num_hidden=2, alpha=0.1,momentum=0.9, epochs=10):
+    def backprop(self,X, targets, theta1, theta2, num_hidden=2, alpha=0.1,momentum=0.9, epochs=10):
         X = self.add_bias(X)
         d0_theta,d1_theta = 0,0
         for i in range(epochs):
             # Forward pass
-            H = self.add_bias(self.transfer(theta1@X))
-            O = self.transfer(theta2@H)
+            h_in = theta1@X
+            h_out = self.add_bias(self.transfer(h_in))
+            o_in = theta2@h_out
+            o_out = self.transfer(o_in)
 
             # Backward pass
-            delta_o = (O-labels)*self.gradient_transfer(O)
-            delta_h = (theta2.T@delta_o)*self.gradient_transfer(H)
+            delta_o = (o_out-targets)*self.gradient_transfer(o_out)
+            delta_h = (theta2.T@delta_o)*self.gradient_transfer(h_out)
             delta_h = delta_h[range(num_hidden),:]
 
             # Update weights
-            d0_theta = (momentum*d0_theta) - ((1 - momentum)*delta_h@X.T)
-            d1_theta = (momentum*d1_theta) - ((1 - momentum)*delta_o@H.T)
+            d0_theta = (momentum*d0_theta) - ((1 - momentum)*(delta_h@X.T))
+            d1_theta = (momentum*d1_theta) - ((1 - momentum)*(delta_o@h_out.T))
             theta1 += alpha*d0_theta
             theta2 += alpha*d1_theta
         
@@ -77,8 +79,6 @@ class MLP:
         O = self.transfer(theta2@H)
 
         return O
-
-       
 
 MLP_model = MLP()
 X, T = data.xor()
