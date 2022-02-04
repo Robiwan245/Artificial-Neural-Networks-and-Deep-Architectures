@@ -37,7 +37,7 @@ def generate_not_linearly_separable_data():
     X = np.vstack((Xs, Ys))
     Y = np.concatenate((classA_labels, classB_labels))
 
-    return X, Y, classA, classB
+    return X, Y, classA, classB, n
 
     #return classA, classB, classA_labels, classB_labels
 
