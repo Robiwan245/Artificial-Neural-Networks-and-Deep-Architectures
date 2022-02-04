@@ -1,3 +1,5 @@
+from cProfile import label
+from sympy import E
 import data
 import matplotlib.pyplot as plt
 import numpy as np
@@ -46,34 +48,35 @@ class MLP:
         
         return theta1, theta2
     
-    def error_testing(self, X, labels, num_hidden_list, alpha, epochs):
-        class_errors = []
-        MSEs = []
+    def error_testing(self, X, labels, num_hidden_list, alpha, epochs_list):
+        class_errors = {}
+        MSEs = {}
+        for epochs in epochs_list:
+            class_errors[epochs] = []
+            MSEs[epochs] = []
+            for num_hidden in num_hidden_list:
+                theta1 = self.init_theta(num_hidden, X.shape[0]+1)
+                theta2 = self.init_theta( X.shape[0], num_hidden+1)
+                new_theta1, new_theta2 = self.backprop(X, labels, theta1, theta2, num_hidden,epochs=epochs, alpha=alpha, momentum=0.9)
 
-        for num_hidden in num_hidden_list:
-            theta1 = self.init_theta(num_hidden, X.shape[0]+1)
-            theta2 = self.init_theta( X.shape[0], num_hidden+1)
-            new_theta1, new_theta2 = self.backprop(X, labels, theta1, theta2, num_hidden,epochs=epochs, alpha=alpha, momentum=0.9)
-
-            # Error testing
-            predicted = self.forward(X, new_theta1, new_theta2)
-            classification_error = np.mean(abs(np.sign(predicted)-labels)/2)
-            class_errors.append(classification_error)
-            MSE = np.mean((predicted-labels)**2)
-            MSEs.append(MSE) 
+                # Error testing
+                predicted = self.forward(X, new_theta1, new_theta2)
+                classification_error = np.mean(abs(np.sign(predicted)-labels)/2)
+                class_errors[epochs].append(classification_error)
+                MSE = np.mean((predicted-labels)**2)
+                MSEs[epochs].append(MSE) 
+            
+        _, ax = plt.subplots(2)
+        for epochs in epochs_list:
+            ax[0].plot(num_hidden_list, class_errors[epochs], label='Epochs= ' + str(epochs))
+            ax[0].title.set_text("Classification error")
+            ax[0].set_xlabel("Number of hidden nodes")
+            ax[0].legend()
+            ax[1].plot(num_hidden_list, MSEs[epochs], label='Epochs= ' + str(epochs))
+            ax[1].title.set_text("MSE")
+            ax[1].set_xlabel("Number of hidden nodes")
+            ax[1].legend()
         
-        fig = plt.figure(figsize=(10,5))
-        for num_hidden in num_hidden_list:
-            fig.add_subplot(121)
-            plt.plot(num_hidden_list,class_errors)
-            plt.title("Classification error")
-            plt.xlabel("Number of hidden Nodes")
-            fig.add_subplot(122)
-            plt.plot(num_hidden_list,MSEs)
-            plt.title("MSE")
-            plt.xlabel("Number of hidden Nodes")
-            plt.legend()
-            plt.show()
 
     def forward(self, X, theta1, theta2):
         X = self.add_bias(X)
@@ -83,9 +86,9 @@ class MLP:
         return O
 
 MLP_model = MLP()
-X, T,a,b = data.generate_not_linearly_separable_data()
-num_hidden = 2
-epochs = 50
+X, T = data.xor()
+num_hidden = 200
+epochs = 1000
 alpha = 0.001
 theta1 = MLP_model.init_theta(num_hidden, X.shape[0]+1)
 theta2 = MLP_model.init_theta(X.shape[0], num_hidden+1)
@@ -103,4 +106,5 @@ plt.legend()
 plt.show()
 
 num_hidden_list = range(2,11)
-MLP_model.error_testing(X,T,num_hidden_list,alpha,epochs)
+MLP_model.error_testing(X,T,num_hidden_list,alpha,[50,100,200, 500, 1000])
+plt.show()
