@@ -1,5 +1,3 @@
-from cProfile import label
-from tkinter import HIDDEN
 import data
 import matplotlib.pyplot as plt
 import numpy as np
