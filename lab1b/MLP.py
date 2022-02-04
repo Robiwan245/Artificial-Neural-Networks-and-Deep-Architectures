@@ -1,13 +1,17 @@
 import data
 import matplotlib.pyplot as plt
 import numpy as np
+import time
 
 class MLP:
     def __init__(self) -> None:
         pass
 
-    def init_theta(self,row, cols):
-        return np.random.normal(size=(row, cols))
+    def init_theta(self,n_output, n_input, seed=1):
+        np.random.seed(seed)
+        weights = np.random.normal(size=(n_output,n_input), loc=0, scale=1) 
+    
+        return(weights)
 
     def add_bias(self, input):
         n = input.shape[1]
@@ -43,13 +47,13 @@ class MLP:
         return theta1, theta2
     
     def error_testing(self, X, labels, num_hidden_list, alpha, epochs):
-        class_errors = [] # np.mean(abs(np.sign(forward)-target)/2)
-        MSEs = [] # np.mean((forward-target)**2) 
+        class_errors = []
+        MSEs = []
 
         for num_hidden in num_hidden_list:
             theta1 = self.init_theta(num_hidden, X.shape[0]+1)
             theta2 = self.init_theta( X.shape[0], num_hidden+1)
-            new_theta1, new_theta2 = self.backprop(X, labels, theta1, theta2, num_hidden, alpha, epochs=epochs)
+            new_theta1, new_theta2 = self.backprop(X, labels, theta1, theta2, num_hidden,epochs=epochs, alpha=alpha, momentum=0.9)
 
             # Error testing
             predicted = self.forward(X, new_theta1, new_theta2)
@@ -79,14 +83,14 @@ class MLP:
         return O
 
 MLP_model = MLP()
-X, T = data.xor()
+X, T,a,b = data.generate_not_linearly_separable_data()
 num_hidden = 2
-epochs = 500
+epochs = 50
 alpha = 0.001
 theta1 = MLP_model.init_theta(num_hidden, X.shape[0]+1)
-theta2 = MLP_model.init_theta( X.shape[0], num_hidden+1)
+theta2 = MLP_model.init_theta(X.shape[0], num_hidden+1)
 
-new_theta1, new_theta2 = MLP_model.backprop(X,T, theta1, theta2, num_hidden, alpha, epochs=epochs)
+new_theta1, new_theta2 = MLP_model.backprop(X,T, theta1, theta2, num_hidden, alpha=alpha, epochs=epochs, momentum=0.9)
 
 w11, w12, bias1 = new_theta1[0,0], new_theta1[0,1], new_theta1[0,2]
 w21, w22, bias2 = new_theta1[1,0], new_theta1[1,1], new_theta1[1,2]
@@ -98,5 +102,5 @@ plt.plot(x, -(w21*x+bias2)/w22, label="Hidden layer 2")
 plt.legend()
 plt.show()
 
-num_hidden_list = range(2,21)
+num_hidden_list = range(2,11)
 MLP_model.error_testing(X,T,num_hidden_list,alpha,epochs)
