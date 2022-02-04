@@ -87,32 +87,32 @@ class MLP:
 
 MLP_model = MLP()
 X, T,_,_ , n = data.generate_not_linearly_separable_data()
-num_hidden = 200
+num_hidden = 2
 epochs = 1000
 alpha = 0.001
 theta1 = MLP_model.init_theta(num_hidden, X.shape[0]+1)
 theta2 = MLP_model.init_theta(X.shape[0], num_hidden+1)
 
-new_theta1, new_theta2 = MLP_model.backprop(X,T, theta1, theta2, num_hidden, alpha=alpha, epochs=epochs, momentum=0.9)
+# new_theta1, new_theta2 = MLP_model.backprop(X,T, theta1, theta2, num_hidden, alpha=alpha, epochs=epochs, momentum=0.9)
 
-w11, w12, bias1 = new_theta1[0,0], new_theta1[0,1], new_theta1[0,2]
-w21, w22, bias2 = new_theta1[1,0], new_theta1[1,1], new_theta1[1,2]
+# w11, w12, bias1 = new_theta1[0,0], new_theta1[0,1], new_theta1[0,2]
+# w21, w22, bias2 = new_theta1[1,0], new_theta1[1,1], new_theta1[1,2]
 
-plt.scatter(X[0,:], X[1,:], c=T[:])
-x = np.linspace(-2, 2, 1000)
-plt.plot(x, -(w11*x+bias1)/w12, label="Hidden layer 1")
-plt.plot(x, -(w21*x+bias2)/w22, label="Hidden layer 2")
-plt.legend()
-plt.show()
+# plt.scatter(X[0,:], X[1,:], c=T[:])
+# x = np.linspace(-2, 2, 1000)
+# plt.plot(x, -(w11*x+bias1)/w12, label="Hidden layer 1")
+# plt.plot(x, -(w21*x+bias2)/w22, label="Hidden layer 2")
+# plt.legend()
+# plt.show()
 
-## 3.1.1 quesiton 1
-num_hidden_list = range(2,11)
-MLP_model.error_testing(X,T,num_hidden_list,alpha,"train",[50,100,200, 500, 1000], X,T)
-plt.show()
+# ## 3.1.1 quesiton 1
+# num_hidden_list = range(2,11)
+# MLP_model.error_testing(X,T,num_hidden_list,alpha,"train",[50,100,200, 500, 1000], X,T)
+# plt.show()
 
-## 3.1.1 question 2
-A_idx_list = np.where(T==1)[0]
-B_idx_list = np.where(T==-1)[0]
+# ## 3.1.1 question 2
+# A_idx_list = np.where(T==1)[0]
+# B_idx_list = np.where(T==-1)[0]
 
 # 25% from each class
 # A_sample_idx_list = np.random.choice(A_idx_list, int(n*0.25), replace=False)
@@ -145,20 +145,87 @@ B_idx_list = np.where(T==-1)[0]
 # plt.show()
 
 # 20% from a subset of classA for which classA(1,:)<0 and 80% from a subset of classA for which classA(1,:)>0
-A_idx_list_cond1 = np.where((X[0,:] < 0) & (T==1))[0]
-A_idx_list_cond2 = np.where((X[0,:] > 0) & (T==1))[0]
-A_sample1_idx_list = np.random.choice(A_idx_list_cond1, int(0.2*A_idx_list_cond1.shape[0]), replace=False)
-A_sample2_idx_list = np.random.choice(A_idx_list_cond2, int(0.8*A_idx_list_cond2.shape[0]), replace=False)
-A_sample_idx_list = np.concatenate((A_sample1_idx_list, A_sample2_idx_list))
-B_sample_idx_list = B_idx_list
-train_idx_list = np.concatenate((A_sample_idx_list, B_sample_idx_list))
-validation_idx_list = [i for i in range(X.shape[1]) if i not in train_idx_list]
-X_train = X[:, train_idx_list]
-T_train = T[train_idx_list]
-X_validation = X[:, validation_idx_list]
-T_validation = T[validation_idx_list]
+# A_idx_list_cond1 = np.where((X[0,:] < 0) & (T==1))[0]
+# A_idx_list_cond2 = np.where((X[0,:] > 0) & (T==1))[0]
+# A_sample1_idx_list = np.random.choice(A_idx_list_cond1, int(0.2*A_idx_list_cond1.shape[0]), replace=False)
+# A_sample2_idx_list = np.random.choice(A_idx_list_cond2, int(0.8*A_idx_list_cond2.shape[0]), replace=False)
+# A_sample_idx_list = np.concatenate((A_sample1_idx_list, A_sample2_idx_list))
+# B_sample_idx_list = B_idx_list
+# train_idx_list = np.concatenate((A_sample_idx_list, B_sample_idx_list))
+# validation_idx_list = [i for i in range(X.shape[1]) if i not in train_idx_list]
+# X_train = X[:, train_idx_list]
+# T_train = T[train_idx_list]
+# X_validation = X[:, validation_idx_list]
+# T_validation = T[validation_idx_list]
 
-MLP_model.error_testing(X_train, T_train, num_hidden_list, alpha, "test", [50,100,200, 500, 1000], X_train, T_train) # Train
+# MLP_model.error_testing(X_train, T_train, num_hidden_list, alpha, "test", [50,100,200, 500, 1000], X_train, T_train) # Train
+# plt.show()
+# MLP_model.error_testing(X_train, T_train, num_hidden_list, alpha, "Validation", [50,100,200, 500, 1000], X_validation, T_validation) # Validation
+# plt.show()
+
+# Make an attempt at approximating the resulting decision boundary,i.e. where the network output is 0 (between the target labels of -1 and 1 for two classes, respectively).
+
+# new_theta1, new_theta2 = MLP_model.backprop(X,T, theta1, theta2, num_hidden, alpha=alpha, epochs=epochs, momentum=0.9)
+# fig = plt.figure(figsize=(10,5))
+# x, y = np.mgrid[slice(-2,2,0.01), slice(-1,1,0.01)]
+# x, y = np.concatenate(x), np.concatenate(y)
+# x_plot = np.array([x,y])
+# predictions_plot = MLP_model.forward(x_plot, new_theta1, new_theta2)
+# plt.scatter(x_plot[0,:], x_plot[1,:], c=predictions_plot[0,:])
+# plt.colorbar()
+
+# # Plot hidden layer decision boundaries
+# w11, w12, bias1 = new_theta1[0,0], new_theta1[0,1], new_theta1[0,2]
+# w21, w22, bias2 = new_theta1[1,0], new_theta1[1,1], new_theta1[1,2]
+# x = np.linspace(-2, 2, 1000)
+# plt.plot(x, -(w11*x+bias1)/w12, c="red", label="hidden layer 1", linewidth=2)
+# plt.plot(x, -(w21*x+bias2)/w22, c="cyan", label="hidden layer 2", linewidth=2)
+
+# # Plot the true targets and rest of plot details
+# plt.scatter(X[0,:], X[1,:], c=T[:])
+# plt.title("Area is the raw predictions and points the training patterns")
+# plt.xlabel("X1")
+# plt.ylabel("X2")
+# plt.xlim((-2,2))
+# plt.ylim((-1,1))
+# plt.legend()
+# plt.grid(True)
+# plt.show()
+
+# 3.1.3
+x = np.arange(-5, 5, 0.5)
+y = np.arange(-5, 5, 0.5)
+xx, yy = np.meshgrid(x, y)
+f = lambda x,y: np.exp(-(x**2+y**2)/10)-0.5
+zz = f(xx, yy)
+
+# 2D
+fig = plt.figure(figsize=(10,5))
+fig2d = fig.add_subplot(1,2,1)
+fig2d.contourf(xx, yy, zz)
+fig2d.set_xlabel("X1")
+fig2d.set_ylabel("X2")
+
+# 3D
+fig3d = fig.add_subplot(1, 2, 2, projection='3d')
+fig3d.plot_surface(xx, yy, zz)
+fig3d.set_xlabel("X1")
+fig3d.set_ylabel("X2")
+fig3d.set_zlabel("f")
 plt.show()
-MLP_model.error_testing(X_train, T_train, num_hidden_list, alpha, "Validation", [50,100,200, 500, 1000], X_validation, T_validation) # Validation
+
+n = len(x)*len(y)
+T = zz.reshape(1, n)
+X = np.vstack((xx.reshape(1, n), yy.reshape(1, n)))
+num_hidden_list = [1, 2, 4, 8, 16, 32]
+fig = plt.figure(figsize=(10,5))
+plot = 1
+for num_hidden in num_hidden_list:
+    theta1 = MLP_model.init_theta(num_hidden, X.shape[0]+1)
+    theta2 = MLP_model.init_theta(X.shape[0], num_hidden+1)
+    new_theta1, new_theta2 = MLP_model.backprop(X,T, theta1, theta2, num_hidden, alpha=alpha, epochs=epochs, momentum=0.9)
+    ax = fig.add_subplot(2,4, plot, projection='3d')
+    plot += 1
+    ax.plot_surface(xx,yy, MLP_model.forward(X, new_theta1, new_theta2)[1].reshape(20,20), color="green")
+    ax.set_title("Representation using " + str(num_hidden) + " hidden nodes")
 plt.show()
