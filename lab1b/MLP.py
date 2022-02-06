@@ -1,10 +1,6 @@
-from cProfile import label
-from matplotlib import projections
-from sympy import E
 import data
 import matplotlib.pyplot as plt
 import numpy as np
-import time
 
 class MLP:
     def __init__(self) -> None:
