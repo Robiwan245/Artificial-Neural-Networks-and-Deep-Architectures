@@ -1,4 +1,5 @@
 from cProfile import label
+from matplotlib import projections
 from sympy import E
 import data
 import matplotlib.pyplot as plt
@@ -217,7 +218,7 @@ plt.show()
 n = len(x)*len(y)
 T = zz.reshape(1, n)
 X = np.vstack((xx.reshape(1, n), yy.reshape(1, n)))
-num_hidden_list = [1, 2, 4, 8, 16, 32]
+num_hidden_list = [1, 2, 4, 8, 16, 20, 25]
 fig = plt.figure(figsize=(10,5))
 plot = 1
 for num_hidden in num_hidden_list:
@@ -228,4 +229,150 @@ for num_hidden in num_hidden_list:
     plot += 1
     ax.plot_surface(xx,yy, MLP_model.forward(X, new_theta1, new_theta2)[1].reshape(20,20), color="green")
     ax.set_title("Representation using " + str(num_hidden) + " hidden nodes")
+plt.show()
+
+## Evaluate generalisation performance.
+
+# Vary the number of nodes in the hidden layer from 1 to 25
+train_idx = np.random.choice(range(n), int(n*0.6), replace=False)
+validation_idx = [i for i in range(n) if i not in train_idx]
+X_train = X[:, train_idx]
+T_train = T[0,train_idx]
+X_validation = X[:, validation_idx]
+T_validation = T[0,validation_idx]
+mse_train = []
+mse_validation= []
+
+for num_hidden in num_hidden_list:
+    theta1 = MLP_model.init_theta(num_hidden, X.shape[0]+1)
+    theta2 = MLP_model.init_theta(X.shape[0], num_hidden+1)
+    new_theta1, new_theta2 = MLP_model.backprop(X,T, theta1, theta2, num_hidden, alpha=alpha, epochs=epochs, momentum=0.9)
+
+    # MSE train
+    predicted = MLP_model.forward(X_train,new_theta1, new_theta2)
+    mse_train.append(np.mean((predicted-T_train)**2))
+
+    # MSE Validation
+    predicted = MLP_model.forward(X_validation,new_theta1, new_theta2)
+    mse_validation.append(np.mean((predicted-T_validation)**2))
+
+plt.plot(num_hidden_list, mse_train, label="Train")
+plt.plot(num_hidden_list, mse_validation, label="Validation")
+plt.xlabel("Num of Hidden Nodes")
+plt.ylabel("MSE")
+plt.title("MSE sampling using 60% of training data")
+plt.legend()
+plt.xticks(num_hidden_list)
+plt.show()
+
+# Find best for 8 hidden
+num_hidden = 8
+theta1 = MLP_model.init_theta(num_hidden, X.shape[0]+1)
+theta2 = MLP_model.init_theta(X.shape[0], num_hidden+1)
+alpha_list = [0.01,0.01,0.1,0.3,0.5]
+epochs_list = [50,100,1000,5000]
+best_alpha = -np.inf
+best_epochs = -np.inf
+best_error = np.inf
+for alpha in alpha_list:
+    for epochs  in epochs_list:
+        new_theta1, new_theta2 = MLP_model.backprop(X,T, theta1, theta2, num_hidden, alpha=alpha, epochs=epochs, momentum=0.9)
+
+        predicted = MLP_model.forward(X_validation, new_theta1, new_theta2)
+        mse = np.mean((predicted-T_validation)**2)
+        if mse < best_error:
+            best_alpha = alpha
+            best_epochs = epochs
+            best_error = mse
+        if best_error == 0:
+            break
+
+print("Best learning rate: " + str(best_alpha))
+print("Best epcohs: " + str(best_epochs))
+print("MSE: " + str(best_error))
+
+# # training with best parameters GAV UPP PÅ DENNA DEL FÖR PLOTTEN FUNKADE INTE PALLADE INTE VI HAR PRINT AV MSE VILKEN BORDE RÄCKA
+# new_theta1, new_theta2 = MLP_model.backprop(X,T, theta1, theta2, num_hidden, alpha=best_alpha, epochs=best_epochs, momentum=0.9)
+
+# predictions = MLP_model.forward(X, new_theta1, new_theta2)
+
+# # predictions plot
+# fig = plt.figure(figsize=(10,5))
+# fig3= fig.add_subplot(2,2,1, projection='3d')
+# fig3.plot_surface(xx,yy,predictions[1].reshape(20,20), color="coral", alpha=0.5)
+# fig3.set_xlabel("X1")
+# fig3.set_ylabel("X2")
+# fig3.set_zlabel("f")
+# fig3.set_title("Original (blue) vs predicted (coral)")
+
+# plt.show()
+
+# For the selected ”best” model, run experiments with varying number of the training samples, e.g. from 80% down to 20% of all the dataset.
+num_hidden = 8
+nsamps = np.linspace(0.2, 0.8, 7, endpoint=True)
+mse_train = []
+mse_validation = []
+
+for nsamp in nsamps:
+    train_idx = np.random.choice(range(n), int(n*nsamp), replace=False)
+    validation_idx = [i for i in range(n) if i not in train_idx]
+    X_train = X[:, train_idx]
+    T_train = T[0,train_idx]
+    X_validation = X[:, validation_idx]
+    T_validation = T[0,validation_idx]
+
+    theta1 = MLP_model.init_theta(num_hidden, X.shape[0]+1)
+    theta2 = MLP_model.init_theta(X.shape[0], num_hidden+1)
+    new_theta1, new_theta2 = MLP_model.backprop(X_train,T_train, theta1, theta2, num_hidden, alpha=best_alpha, epochs=best_epochs, momentum=0.9)
+
+    # MSE train
+    predicted = MLP_model.forward(X_train,new_theta1, new_theta2)
+    mse_train.append(np.mean((predicted-T_train)**2))
+
+    # MSE Validation
+    predicted = MLP_model.forward(X_validation,new_theta1, new_theta2)
+    mse_validation.append(np.mean((predicted-T_validation)**2))
+
+plt.plot(nsamps, mse_train, label="Train")
+plt.plot(nsamps, mse_validation, label="Validation")
+plt.xlabel("Num of samples")
+plt.ylabel("MSE")
+plt.title("MSE best model (with sampling)")
+plt.legend()
+plt.xticks(nsamps)
+plt.show()
+
+# For the ”best” model, can you speed up the convergence without compromising the generalisation performance?
+nsamp = 0.8
+train_idx = np.random.choice(range(n), int(n*nsamp), replace=False)
+validation_idx = [i for i in range(n) if i not in train_idx]
+X_train = X[:, train_idx]
+T_train = T[0,train_idx]
+X_validation = X[:, validation_idx]
+T_validation = T[0,validation_idx]
+
+epochs_list = [10,20,30,40,50,60,70,80,90,100]
+mse_train = []
+mse_validation = []
+
+for epochs in epochs_list:
+    theta1 = MLP_model.init_theta(num_hidden, X.shape[0]+1)
+    theta2 = MLP_model.init_theta(X.shape[0], num_hidden+1)
+    new_theta1, new_theta2 = MLP_model.backprop(X_train,T_train, theta1, theta2, num_hidden, alpha=best_alpha, epochs=epochs, momentum=0.9)
+
+    # MSE train
+    predicted = MLP_model.forward(X_train,new_theta1, new_theta2)
+    mse_train.append(np.mean((predicted-T_train)**2))
+
+    # MSE Validation
+    predicted = MLP_model.forward(X_validation,new_theta1, new_theta2)
+    mse_validation.append(np.mean((predicted-T_validation)**2))
+
+plt.plot(epochs_list, mse_train, label="Train")
+plt.plot(epochs_list, mse_validation, label="Validation")
+plt.xlabel("Num of epochs")
+plt.ylabel("MSE")
+plt.title("MSE best model (with 80% sampling)")
+plt.legend()
+plt.xticks(epochs_list)
 plt.show()
