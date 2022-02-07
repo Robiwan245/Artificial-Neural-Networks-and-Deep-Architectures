@@ -45,6 +45,30 @@ class MLP:
         
         return theta1, theta2
     
+    def backprop_seq(self, X, targets, theta1, theta2, num_hidden=2, alpha=0.1, momentum=0.9, epochs=10):
+        X = self.add_bias(X)
+        d0_theta,d1_theta = 0,0
+        for _ in range(epochs):
+            for i in range(X): 
+                # Forward pass
+                h_in = theta1@X
+                h_out = self.add_bias(self.transfer(h_in))
+                o_in = theta2@h_out
+                o_out = self.transfer(o_in)
+
+                # Backward pass
+                delta_o = (o_out-targets)*self.gradient_transfer(o_out)
+                delta_h = (theta2.T@delta_o)*self.gradient_transfer(h_out)
+                delta_h = delta_h[range(num_hidden),:]
+
+                # Update weights
+                d0_theta = (momentum*d0_theta) - ((1 - momentum)*(delta_h@X.T))
+                d1_theta = (momentum*d1_theta) - ((1 - momentum)*(delta_o@h_out.T))
+                theta1 += alpha*d0_theta
+                theta2 += alpha*d1_theta
+        
+        return theta1, theta2
+    
     def error_testing(self, X_train, labels_train, num_hidden_list, alpha, title, epochs_list, X_validation, labels_validation):
         class_errors = {}
         MSEs = {}
@@ -83,10 +107,10 @@ class MLP:
         return O
 
 MLP_model = MLP()
-X, T,_,_ , n = data.generate_not_linearly_separable_data()
-num_hidden = 2
-epochs = 1000
-alpha = 0.001
+X, T,_,_,n = data.generate_not_linearly_separable_data()
+num_hidden = 8
+epochs = 5000
+alpha = 0.01
 theta1 = MLP_model.init_theta(num_hidden, X.shape[0]+1)
 theta2 = MLP_model.init_theta(X.shape[0], num_hidden+1)
 
@@ -102,16 +126,16 @@ theta2 = MLP_model.init_theta(X.shape[0], num_hidden+1)
 # plt.legend()
 # plt.show()
 
-# ## 3.1.1 quesiton 1
+# # 3.1.1 quesiton 1
 # num_hidden_list = range(2,11)
-# MLP_model.error_testing(X,T,num_hidden_list,alpha,"train",[50,100,200, 500, 1000], X,T)
+# MLP_model.error_testing(X,T,num_hidden_list,alpha,"train",[1,10, 50, 100, 500], X,T)
 # plt.show()
 
 # ## 3.1.1 question 2
 # A_idx_list = np.where(T==1)[0]
 # B_idx_list = np.where(T==-1)[0]
 
-# 25% from each class
+# #25% from each class
 # A_sample_idx_list = np.random.choice(A_idx_list, int(n*0.25), replace=False)
 # B_sample_idx_list = np.random.choice(B_idx_list, int(n*0.25), replace=False)
 # train_idx_list = np.concatenate((A_sample_idx_list, B_sample_idx_list))
@@ -121,12 +145,12 @@ theta2 = MLP_model.init_theta(X.shape[0], num_hidden+1)
 # X_validation = X[:, validation_idx_list]
 # T_validation = T[validation_idx_list]
 
-# MLP_model.error_testing(X_train, T_train, num_hidden_list, alpha, "test", [50,100,200, 500, 1000], X_train, T_train) # Train
+# MLP_model.error_testing(X_train, T_train, num_hidden_list, alpha, "test", [1,10, 50, 100, 500], X_train, T_train) # Train
 # plt.show()
-# MLP_model.error_testing(X_train, T_train, num_hidden_list, alpha, "Validation", [50,100,200, 500, 1000], X_validation, T_validation) # Validation
+# MLP_model.error_testing(X_train, T_train, num_hidden_list, alpha, "Validation", [1,10, 50, 100, 500], X_validation, T_validation) # Validation
 # plt.show()
 
-# 50% from class A
+# #50% from class A
 # A_sample_idx_list = np.random.choice(A_idx_list, int(n*0.50), replace=False)
 # B_sample_idx_list = B_idx_list
 # train_idx_list = np.concatenate((A_sample_idx_list, B_sample_idx_list))
@@ -136,12 +160,12 @@ theta2 = MLP_model.init_theta(X.shape[0], num_hidden+1)
 # X_validation = X[:, validation_idx_list]
 # T_validation = T[validation_idx_list]
 
-# MLP_model.error_testing(X_train, T_train, num_hidden_list, alpha, "test", [50,100,200, 500, 1000], X_train, T_train) # Train
+# MLP_model.error_testing(X_train, T_train, num_hidden_list, alpha, "test", [1,10, 50, 100, 500], X_train, T_train) # Train
 # plt.show()
-# MLP_model.error_testing(X_train, T_train, num_hidden_list, alpha, "Validation", [50,100,200, 500, 1000], X_validation, T_validation) # Validation
+# MLP_model.error_testing(X_train, T_train, num_hidden_list, alpha, "Validation", [1,10, 50, 100, 500], X_validation, T_validation) # Validation
 # plt.show()
 
-# 20% from a subset of classA for which classA(1,:)<0 and 80% from a subset of classA for which classA(1,:)>0
+# #20% from a subset of classA for which classA(1,:)<0 and 80% from a subset of classA for which classA(1,:)>0
 # A_idx_list_cond1 = np.where((X[0,:] < 0) & (T==1))[0]
 # A_idx_list_cond2 = np.where((X[0,:] > 0) & (T==1))[0]
 # A_sample1_idx_list = np.random.choice(A_idx_list_cond1, int(0.2*A_idx_list_cond1.shape[0]), replace=False)
@@ -155,15 +179,15 @@ theta2 = MLP_model.init_theta(X.shape[0], num_hidden+1)
 # X_validation = X[:, validation_idx_list]
 # T_validation = T[validation_idx_list]
 
-# MLP_model.error_testing(X_train, T_train, num_hidden_list, alpha, "test", [50,100,200, 500, 1000], X_train, T_train) # Train
+# MLP_model.error_testing(X_train, T_train, num_hidden_list, alpha, "test", [1,10, 50, 100, 500], X_train, T_train) # Train
 # plt.show()
-# MLP_model.error_testing(X_train, T_train, num_hidden_list, alpha, "Validation", [50,100,200, 500, 1000], X_validation, T_validation) # Validation
+# MLP_model.error_testing(X_train, T_train, num_hidden_list, alpha, "Validation", [1,10, 50, 100, 500], X_validation, T_validation) # Validation
 # plt.show()
 
 # Make an attempt at approximating the resulting decision boundary,i.e. where the network output is 0 (between the target labels of -1 and 1 for two classes, respectively).
 
 # new_theta1, new_theta2 = MLP_model.backprop(X,T, theta1, theta2, num_hidden, alpha=alpha, epochs=epochs, momentum=0.9)
-# fig = plt.figure(figsize=(10,5))
+# fig = plt.figure(figsize=(5,5))
 # x, y = np.mgrid[slice(-2,2,0.01), slice(-1,1,0.01)]
 # x, y = np.concatenate(x), np.concatenate(y)
 # x_plot = np.array([x,y])
@@ -179,14 +203,13 @@ theta2 = MLP_model.init_theta(X.shape[0], num_hidden+1)
 # plt.plot(x, -(w21*x+bias2)/w22, c="cyan", label="hidden layer 2", linewidth=2)
 
 # # Plot the true targets and rest of plot details
-# plt.scatter(X[0,:], X[1,:], c=T[:])
-# plt.title("Area is the raw predictions and points the training patterns")
+# plt.scatter(X[0,:], X[1,:], c=T)
+# plt.title("Approximation of resulting decision boundry")
 # plt.xlabel("X1")
 # plt.ylabel("X2")
 # plt.xlim((-2,2))
 # plt.ylim((-1,1))
 # plt.legend()
-# plt.grid(True)
 # plt.show()
 
 # 3.1.3
@@ -331,7 +354,7 @@ for nsamp in nsamps:
 
 plt.plot(nsamps, mse_train, label="Train")
 plt.plot(nsamps, mse_validation, label="Validation")
-plt.xlabel("Num of samples")
+plt.xlabel("Num of samples (% of training data)")
 plt.ylabel("MSE")
 plt.title("MSE best model (with sampling)")
 plt.legend()
