@@ -1,6 +1,8 @@
 import numpy as np
 from tqdm import tqdm
 from matplotlib import pyplot as plt
+from sklearn.metrics import mean_squared_error as mse
+from sklearn.metrics import mean_absolute_error as mae
 
 def rbf(x, mean, variance):
     phi = np.zeros((x.shape[0], mean.shape[0]))
@@ -11,19 +13,19 @@ def rbf(x, mean, variance):
     return phi
 
 def k_means(x, lr, k, epochs):
-    rbf_nodes = x[np.random.choice(len(x), k)]
+    clusters = x[np.random.choice(len(x), k)]
 
     for _ in tqdm(range(epochs)):
         point = [np.random.choice(x[np.random.randint(0, len(x))])]
         distances = []
 
-        for node in rbf_nodes:
+        for node in clusters:
             distances.append(np.linalg.norm(node - point))
 
         winner = np.argmin(distances) 
-        rbf_nodes[winner] += lr * (point - rbf_nodes[winner])
+        clusters[winner] += lr * (point - clusters[winner])
 
-    return rbf_nodes
+    return clusters
 
 class RBF:
 
@@ -44,22 +46,29 @@ class RBF:
         phi = rbf(x, mean, self.variance)
         return np.dot(phi, w)
 
+    def accuracy(self, pred, y):
+        return np.sum((pred - y)**2) / len(y)
+
 X = np.arange(0, 2 * np.pi, 0.1)[:, np.newaxis]
 y = np.sin(2 * X)
 X_test = np.arange(0.05, 2 * np.pi, 0.1)[:, np.newaxis]
 y_test = np.sin(2 * X_test)
 
-rbf_nodes = 100
+#clusters = 100
 variance = 0.1
 lr = 0.2
 epochs = 10000
-k = 25
+ks= [25, 75, 200]
 
-model = RBF(lr, variance, epochs, k)
-w, clusters = model.fit(X, y)
-y_predicted = model.predict(X_test, clusters, w)
+for k in ks:
 
-plt.plot(X, y, label='Real output')
-plt.plot(X_test, y_predicted, label='Prediction')
-plt.legend()
-plt.show()
+    model = RBF(lr, variance, epochs, k)
+    w, clusters = model.fit(X, y)
+    y_predicted = model.predict(X_test, clusters, w)
+    accuracy = mae(y_test, y_predicted)
+    print("Accuracy for " + str(k) + " components as mean absolute error: " + str(accuracy))
+
+    plt.plot(X, y, label='Real output')
+    plt.plot(X_test, y_predicted, label='Prediction')
+    plt.legend()
+    plt.show()
