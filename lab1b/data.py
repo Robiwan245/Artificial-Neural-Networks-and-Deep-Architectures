@@ -4,7 +4,7 @@ import matplotlib as plt
 def generate_not_linearly_separable_data():
 
     n = 100
-    mA = [ 2.0, 0.3]
+    mA = [ 1.0, 0.3]
     mB = [ -0.1, -0.1] 
     sigmaA = 0.2
     sigmaB = 0.3

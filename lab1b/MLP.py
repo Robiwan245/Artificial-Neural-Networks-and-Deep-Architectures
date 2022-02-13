@@ -47,7 +47,7 @@ class MLP:
             theta2 += alpha*d1_theta
         
         return theta1, theta2
-    
+
     def error_testing(self, X_train, labels_train, num_hidden_list, alpha, title, epochs_list, X_validation, labels_validation):
         class_errors = {}
         MSEs = {}
@@ -64,7 +64,7 @@ class MLP:
                 classification_error = np.mean(abs(np.sign(predicted)-labels_validation)/2)
                 class_errors[epochs].append(classification_error)
                 MSE = np.mean((predicted-labels_validation)**2)
-                MSEs[epochs].append(MSE) 
+                MSEs[epochs].append(MSE)
             
         _, ax = plt.subplots(2)
         for epochs in epochs_list:
@@ -89,26 +89,28 @@ MLP_model = MLP()
 X, T,_,_ , n = data.generate_not_linearly_separable_data()
 num_hidden = 2
 epochs = 1000
-alpha = 0.001
+alpha = 0.1
 theta1 = MLP_model.init_theta(num_hidden, X.shape[0]+1)
 theta2 = MLP_model.init_theta(X.shape[0], num_hidden+1)
 
-# new_theta1, new_theta2 = MLP_model.backprop(X,T, theta1, theta2, num_hidden, alpha=alpha, epochs=epochs, momentum=0.9)
+new_theta1, new_theta2 = MLP_model.backprop(X,T, theta1, theta2, num_hidden, alpha=alpha, epochs=epochs, momentum=0.9)
 
-# w11, w12, bias1 = new_theta1[0,0], new_theta1[0,1], new_theta1[0,2]
-# w21, w22, bias2 = new_theta1[1,0], new_theta1[1,1], new_theta1[1,2]
+w11, w12, bias1 = new_theta1[0,0], new_theta1[0,1], new_theta1[0,2]
+w21, w22, bias2 = new_theta1[1,0], new_theta1[1,1], new_theta1[1,2]
 
-# plt.scatter(X[0,:], X[1,:], c=T[:])
-# x = np.linspace(-2, 2, 1000)
-# plt.plot(x, -(w11*x+bias1)/w12, label="Hidden layer 1")
-# plt.plot(x, -(w21*x+bias2)/w22, label="Hidden layer 2")
-# plt.legend()
-# plt.show()
+plt.scatter(X[0,:], X[1,:], c=T[:])
+x = np.linspace(np.amin(X[:,:]), np.amax(X[:,:]))
+plt.plot(x, -(w11*x+bias1)/w12, label="Hidden layer 1")
+plt.plot(x, -(w21*x+bias2)/w22, label="Hidden layer 2")
+plt.legend()
+plt.show()
 
-# ## 3.1.1 quesiton 1
-# num_hidden_list = range(2,11)
-# MLP_model.error_testing(X,T,num_hidden_list,alpha,"train",[50,100,200, 500, 1000], X,T)
-# plt.show()
+
+
+## 3.1.1 quesiton 1
+num_hidden_list = range(2, 10)
+MLP_model.error_testing(X,T,num_hidden_list,alpha,"train",[50, 100, 500, 1000], X,T)
+plt.show()
 
 # ## 3.1.1 question 2
 # A_idx_list = np.where(T==1)[0]
@@ -227,5 +229,5 @@ for num_hidden in num_hidden_list:
     ax = fig.add_subplot(2,4, plot, projection='3d')
     plot += 1
     ax.plot_surface(xx,yy, MLP_model.forward(X, new_theta1, new_theta2)[1].reshape(20,20), color="green")
-    ax.set_title("Representation using " + str(num_hidden) + " hidden nodes")
+    ax.set_title("Using " + str(num_hidden) + " hidden nodes")
 plt.show()
