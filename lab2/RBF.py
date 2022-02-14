@@ -53,22 +53,29 @@ class RBF:
     def accuracy(self, pred, y):
         return np.sum((pred - y)**2) / len(y)
 
-sin2x = True
-square2x = False
+sin2x = False
+square2x = True
 competitive_learning = False
+noise = True
 
 if sin2x:
     X = np.arange(0, 2 * np.pi, 0.1)[:, np.newaxis]
     y = np.sin(2 * X)
     X_test = np.arange(0.05, 2 * np.pi, 0.1)[:, np.newaxis]
     y_test = np.sin(2 * X_test)
+    if noise:
+        noise_list = np.array([np.random.normal(0, 0.1, size = len(y))]).T
+        noise_list_test = np.array([np.random.normal(0, 0.1, size = len(y))]).T
+        for i in range(len(y)):
+            y[i] = y[i] + noise_list[i]
+            y_test[i] = y_test[i] + noise_list_test[i]
 
 elif square2x:
     X = np.arange(0, 2 * np.pi, 0.1)[:, np.newaxis]
     y = np.zeros(len(X))
     y_sin = np.sin(2*X)
     for i in range(len(y_sin)):
-        if y_sin[i] > 0:
+        if y_sin[i] >= 0:
             y[i] = 1
         else:
             y[i] = -1
@@ -76,10 +83,16 @@ elif square2x:
     y_test = np.zeros(len(X_test))
     y_sin_test = np.sin(2*X_test)
     for i in range(len(y_sin_test)):
-        if y_sin_test[i] > 0:
+        if y_sin_test[i] >= 0:
             y_test[i] = 1
         else:
             y_test[i] = -1
+    if noise:
+        noise_list = np.array([np.random.normal(0, 0.1, size = len(y))]).T
+        noise_list_test = np.array([np.random.normal(0, 0.1, size = len(y))]).T
+        for i in range(len(y)):
+            y[i] = y[i] + noise_list[i]
+            y_test[i] = y_test[i] + noise_list_test[i]
 
 plt.plot(X, y, label='Real output')
 plt.legend()
