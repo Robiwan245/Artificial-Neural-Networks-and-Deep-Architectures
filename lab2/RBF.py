@@ -29,14 +29,18 @@ def k_means(x, lr, k, epochs):
 
 class RBF:
 
-    def __init__(self, lr, variance, epochs, k) -> None:
+    def __init__(self, lr, variance, epochs, k, competitive_learning) -> None:
         self.lr = lr
         self.variance = variance
         self.epochs = epochs
         self.k = k
+        self.competitive_learning = competitive_learning
 
     def fit(self, x, y):
-        clusters = k_means(X.copy(), self.lr, self.k, self.epochs)
+        if self.competitive_learning:
+            clusters = k_means(X.copy(), self.lr, self.k, self.epochs)
+        else:
+            clusters = np.array([[np.random.choice(x[np.random.randint(0, len(x))])] for i in range(self.k)])
 
         phi = rbf(x, clusters, self.variance)
         w = np.dot(np.linalg.pinv(np.dot(phi.T, phi)), np.dot(phi.T, y))
@@ -49,20 +53,47 @@ class RBF:
     def accuracy(self, pred, y):
         return np.sum((pred - y)**2) / len(y)
 
-X = np.arange(0, 2 * np.pi, 0.1)[:, np.newaxis]
-y = np.sin(2 * X)
-X_test = np.arange(0.05, 2 * np.pi, 0.1)[:, np.newaxis]
-y_test = np.sin(2 * X_test)
+sin2x = True
+square2x = False
+competitive_learning = False
+
+if sin2x:
+    X = np.arange(0, 2 * np.pi, 0.1)[:, np.newaxis]
+    y = np.sin(2 * X)
+    X_test = np.arange(0.05, 2 * np.pi, 0.1)[:, np.newaxis]
+    y_test = np.sin(2 * X_test)
+
+elif square2x:
+    X = np.arange(0, 2 * np.pi, 0.1)[:, np.newaxis]
+    y = np.zeros(len(X))
+    y_sin = np.sin(2*X)
+    for i in range(len(y_sin)):
+        if y_sin[i] > 0:
+            y[i] = 1
+        else:
+            y[i] = -1
+    X_test = np.arange(0.05, 2 * np.pi, 0.1)[:, np.newaxis]
+    y_test = np.zeros(len(X_test))
+    y_sin_test = np.sin(2*X_test)
+    for i in range(len(y_sin_test)):
+        if y_sin_test[i] > 0:
+            y_test[i] = 1
+        else:
+            y_test[i] = -1
+
+plt.plot(X, y, label='Real output')
+plt.legend()
+plt.show()
 
 #clusters = 100
 variance = 0.1
 lr = 0.2
 epochs = 10000
-ks= [25, 75, 200]
+ks= [50, 100, 300]
 
 for k in ks:
 
-    model = RBF(lr, variance, epochs, k)
+    model = RBF(lr, variance, epochs, k, competitive_learning)
     w, clusters = model.fit(X, y)
     y_predicted = model.predict(X_test, clusters, w)
     accuracy = mae(y_test, y_predicted)
