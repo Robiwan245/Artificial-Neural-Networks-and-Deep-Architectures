@@ -72,9 +72,9 @@ class RBF:
         return f_approximate[0]
 
 sin2x = True
-square2x = False
-competitive_learning = True
-batch_mode = True
+square2x = not sin2x
+competitive_learning = False
+batch_mode = False
 
 if sin2x:
     X = np.arange(0, 2 * np.pi, 0.1)[:, np.newaxis]
@@ -100,24 +100,21 @@ elif square2x:
         else:
             y_test[i] = -1
 
-plt.plot(X, y, label='Real output')
-plt.legend()
-plt.show()
-
+sigmas = [0.05,0.1,0.15,0.20,1]
 #clusters = 100
 variance = 0.1
 lr = 0.1
 epochs = 10000
-ks= [50, 100, 300]
-
-for k in ks:
-    model = RBF(lr, variance, epochs, k, competitive_learning, batch_mode)
+ks= [50, 100, 200]
+plt.figure(figsize=(13, 10))
+for sigma in sigmas:
+    model = RBF(lr, variance, epochs, 200, competitive_learning, batch_mode)
     w, clusters = model.fit(X, y)
     y_predicted = model.predict(X_test, clusters, w)
     accuracy = mae(y_test, y_predicted)
-    print("Accuracy for " + str(k) + " components as mean absolute error: " + str(accuracy))
-
-    plt.plot(X, y, label='Real output')
-    plt.plot(X_test, y_predicted, label='Prediction')
+    print("Accuracy for " + str(200) + " components and sigma " + str(sigma)+ " as mean absolute error: " + str(accuracy))
+    if not (sigma>0.05):
+        plt.plot(X, y, label='Real output')
+    plt.plot(X_test, y_predicted, label= "sigma = " + str(sigma))
     plt.legend()
-    plt.show()
+plt.show()
