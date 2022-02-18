@@ -92,18 +92,27 @@ for attractor in attractors:
 
 # 3.2
 pict = np.genfromtxt("pict.dat", delimiter = ',')
-X = pict.reshape(11, 1024)
+data = pict.reshape(11, 1024)
 
-p1 = X[0]
-p2 = X[1]
-p3 = X[2]
-p4 = X[3]
-p5 = X[4]
-p6 = X[5]
-p7 = X[6]
-p8 = X[7]
-p9 = X[8]
-p10 = X[9]
-p11 = X[10]
+p1 = data[0]
+p2 = data[1]
+p3 = data[2]
+p4 = data[3]
+p5 = data[4]
+p6 = data[5]
+p7 = data[6]
+p8 = data[7]
+p9 = data[8]
+p10 = data[9]
+p11 = data[10]
 
-model.display_pattern(p2)
+#model.display_pattern(p1)
+#model.display_pattern(p10)
+
+X = np.array([p1,p2,p3])
+model.train(X)
+new_p10 = model.update(p10,True)
+if (np.array_equal(p1, new_p10)):
+    print("Same")
+model.display_pattern(p1)
+model.display_pattern(new_p10)
