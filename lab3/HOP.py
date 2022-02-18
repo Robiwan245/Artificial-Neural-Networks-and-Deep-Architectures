@@ -60,6 +60,12 @@ class HOP:
             attractors.add(tuple(self.recall(pattern, synchronous=True)))
         
         return np.array([attractor for attractor in attractors])
+    
+    def display_pattern(self, x):
+        x = x.reshape(32,32)
+        plt.imshow(x)
+        plt.title("Pattern")
+        plt.show()
 
 X = np.array([[-1,-1,1,-1,1,-1,-1,1],
                 [-1,-1,-1,-1,-1,1,-1,-1],
@@ -71,6 +77,7 @@ X_distorted = np.array([[1, -1, 1, -1, 1, -1, -1, 1],
                         [1, 1, -1, -1, -1, 1, -1, -1],
                         [1, 1, 1, -1, 1, 1, -1, 1]])
 
+# 3.1
 print("Synchronous")
 for x_distorted, x in zip(X_distorted, X):                    
     model.check_recall(x_distorted, x, synchronous = True)
@@ -82,3 +89,21 @@ attractors = model.find_attractors()
 print("Found {} attractors:".format(len(attractors)))
 for attractor in attractors:
        print(attractor)
+
+# 3.2
+pict = np.genfromtxt("pict.dat", delimiter = ',')
+X = pict.reshape(11, 1024)
+
+p1 = X[0]
+p2 = X[1]
+p3 = X[2]
+p4 = X[3]
+p5 = X[4]
+p6 = X[5]
+p7 = X[6]
+p8 = X[7]
+p9 = X[8]
+p10 = X[9]
+p11 = X[10]
+
+model.display_pattern(p2)
