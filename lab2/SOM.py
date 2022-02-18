@@ -120,7 +120,7 @@ for attr in range(len(mp_attr_titles)):
 
     for value in np.unique(mp_attrs[:, attr]):
         x, y = np.unravel_index(pred_nodes[mp_attrs[:, attr] == value], gridsize)
-        plt.scatter(x, y, label=mp_attr_labels[attr][value-1])
+        plt.scatter(som.add_noise(x), som.add_noise(y), label=mp_attr_labels[attr][value-1])
 
     plt.title(mp_attr_titles[attr], fontsize=30, y=1.02)
     plt.xticks(np.arange(-0.5, gridsize[0]-0.5, 1), labels=[])
