@@ -10,7 +10,7 @@ class HOP:
         self.theta = None
         self.pos_to_update = []
 
-    def train(self, X, gauss_weights=False, symmetric_weights=False, check=True):
+    def train(self, X, gauss_weights=False, symmetric_weights=False, N=3, check=True):
         if gauss_weights:
             self.theta = np.array([[np.random.normal(0, 1) for _ in range(len(X[0]))] for _ in range(len(X[0]))])
         elif symmetric_weights:
@@ -149,10 +149,6 @@ p9 = data[8]
 p10 = data[9]
 p11 = data[10]
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
->>>>>>> 569f181a6a535c94c9d77ba2f4106c938be8f586
 # #model.display_pattern(p1)
 # #model.display_pattern(p10)
 
@@ -291,9 +287,6 @@ num_patterns = 300
 size_net = 100
 patterns = np.array([np.random.choice([-1,1], size_net) for _ in range(num_patterns)])
 print(patterns.shape)
-<<<<<<< HEAD
-=======
-=======
 #model.display_pattern(p1)
 #model.display_pattern(p10)
 
@@ -354,5 +347,3 @@ for _ in tqdm(range(epochs)):
 plt.figure()
 plt.plot(able_to_recall)
 plt.show()
->>>>>>> d0498a0da2e459b65d87a611b400b9c09b8b372c
->>>>>>> 569f181a6a535c94c9d77ba2f4106c938be8f586
