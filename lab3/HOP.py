@@ -42,9 +42,11 @@ class HOP:
                 x_updated[i] = self.sign(np.sum(self.theta[i,:]*x))
         return x_updated
 
-    def recall(self, x, synchronous=False, max_iter = 1):
+    def recall(self, x, synchronous=False, max_iter = 10):
         iter = 0
         while iter<max_iter:
+            e = self.energy(x)
+            print(e)
             x_updated = self.update(x, synchronous)
 
             if np.array_equal(x, x_updated):
@@ -141,12 +143,15 @@ model.display_pattern(p1)
 model.display_pattern(new_p10)
 
 #3.3
-E_for_pattern = model.energy(new_p10)
-print(E_for_pattern)
+# E_for_pattern = model.energy(new_p10)
+# print(E_for_pattern)
+# for i in tqdm(range(data.shape[0])):
+#     E_for_pattern = model.energy(data[i])
+#     print("Energy for p" + str(i) + ":" + str(E_for_pattern))
 
-#3.4
-noice_amount_max = 1024
-able_to_recall = []
+for i in range(data.shape[0]):
+    print("Energy for pattern p" + str(i) + ":")
+    model.recall(data[i])
 
 #3.4
 epochs = 1
