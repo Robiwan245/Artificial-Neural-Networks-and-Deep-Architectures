@@ -3,6 +3,8 @@ import numpy as np
 import data
 import matplotlib.pyplot as plt
 import time
+from sklearn.metrics import mean_squared_error as mse
+from sklearn.metrics import mean_absolute_error as mae
 
 class perceptron:
 
@@ -85,11 +87,11 @@ class perceptron:
     def compute_mse(self, y, t):
         return np.sum(np.square(y - t))
 
-seqential_mode = False
-batch_mode = True
+seqential_mode = True
+batch_mode = False
 delta = True
 perceptron_learning = False
-linearly_separable = True
+linearly_separable = False
 new_data = False
 
 remove_25 = False
@@ -97,16 +99,54 @@ remove_50_A = False
 remove_50_B = False
 a_20_80 = False
 
-learning_rate = 0.1
+learning_rate = 0.01
 iter = 50
 MSE_delta = []
 MSE_perceptron = []
 
 if seqential_mode and delta:
-    if linearly_separable:
-        X_train, Y_train, classA, classB = data.generate_linearly_separated_data(perceptron_learning, seqential_mode, batch_mode)
-    elif not linearly_separable:
-        X_train, Y_train, classA, classB = data.generate__non_linearly_separated_data(perceptron_learning, seqential_mode, batch_mode)
+    # if linearly_separable:
+    #     X_train, Y_train, classA, classB = data.generate_linearly_separated_data(perceptron_learning, seqential_mode, batch_mode)
+    # elif not linearly_separable:
+    #     X_train, Y_train, classA, classB = data.generate__non_linearly_separated_data(perceptron_learning, seqential_mode, batch_mode)
+    X_train = np.arange(0, 2 * np.pi, 0.1)[:, np.newaxis]
+    Y_train = np.sin(2 * X_train)
+    X_test = np.arange(0.05, 2 * np.pi, 0.1)[:, np.newaxis]
+    y_test = np.sin(2 * X_test)
+    noise_list = np.array([np.random.normal(0, 0.1, size = len(Y_train))]).T
+    noise_list_test = np.array([np.random.normal(0, 0.1, size = len(Y_train))]).T
+    for i in range(len(Y_train)):
+        Y_train[i] = Y_train[i] + noise_list[i]
+        y_test[i] = y_test[i] + noise_list_test[i]
+    classA = X_test
+    classB = y_test
+
+
+    # X_train = np.arange(0, 2 * np.pi, 0.1)[:, np.newaxis]
+    # Y_train = np.zeros(len(X_train))
+    # y_sin = np.sin(2*X_train)
+    # for i in range(len(y_sin)):
+    #     if y_sin[i] >= 0:
+    #         Y_train[i] = 1
+    #     else:
+    #         Y_train[i] = -1
+    # X_test = np.arange(0.05, 2 * np.pi, 0.1)[:, np.newaxis]
+    # y_test = np.zeros(len(X_test))
+    # y_sin_test = np.sin(2*X_test)
+    # for i in range(len(y_sin_test)):
+    #     if y_sin_test[i] >= 0:
+    #         y_test[i] = 1
+    #     else:
+    #         y_test[i] = -1
+    # noise_list = np.array([np.random.normal(0, 0.1, size = len(Y_train))]).T
+    # noise_list_test = np.array([np.random.normal(0, 0.1, size = len(Y_train))]).T
+    # for i in range(len(Y_train)):
+    #     Y_train[i] = Y_train[i] + noise_list[i]
+    #     y_test[i] = y_test[i] + noise_list_test[i]
+    # classA = X_test
+    # classB = y_test
+
+    
     model = perceptron(X_train)
     for epoch in range(iter):
         model.sum = 0
@@ -131,12 +171,25 @@ if seqential_mode and delta:
 # plt.show()
 
 if batch_mode and delta:
-    if linearly_separable:
-        X_train, Y_train, classA, classB = data.generate_linearly_separated_data(perceptron_learning, seqential_mode, batch_mode)
-    elif not linearly_separable and not new_data:
-        X_train, Y_train, classA, classB = data.generate__non_linearly_separated_data(perceptron_learning, seqential_mode, batch_mode)
-    elif not linearly_separable and new_data:
-        X_train, Y_train, classA, classB = data.generate__non_linearly_separated_data2(perceptron_learning, seqential_mode, batch_mode, remove_25, remove_50_A, remove_50_B, a_20_80)
+    # if linearly_separable:
+    #     X_train, Y_train, classA, classB = data.generate_linearly_separated_data(perceptron_learning, seqential_mode, batch_mode)
+    # elif not linearly_separable and not new_data:
+    #     X_train, Y_train, classA, classB = data.generate__non_linearly_separated_data(perceptron_learning, seqential_mode, batch_mode)
+    # elif not linearly_separable and new_data:
+    #     X_train, Y_train, classA, classB = data.generate__non_linearly_separated_data2(perceptron_learning, seqential_mode, batch_mode, remove_25, remove_50_A, remove_50_B, a_20_80)
+    # X_train = np.arange(0, 2 * np.pi, 0.1)[:, np.newaxis]
+    # Y_train = np.sin(2 * X_train)
+    # X_test = np.arange(0.05, 2 * np.pi, 0.1)[:, np.newaxis]
+    # y_test = np.sin(2 * X_test)
+    # noise_list = np.array([np.random.normal(0, 0.1, size = len(Y_train))]).T
+    # noise_list_test = np.array([np.random.normal(0, 0.1, size = len(Y_train))]).T
+    # for i in range(len(Y_train)):
+    #     Y_train[i] = Y_train[i] + noise_list[i]
+    #     y_test[i] = y_test[i] + noise_list_test[i]
+    # classA = X_test
+    # classB = y_test
+    
+    
     model = perceptron(X_train)
     for _ in range(iter):
         model.sum = 0
@@ -155,8 +208,9 @@ if perceptron_learning:
 plt.figure(figsize=(10, 10))
 plt.xlabel("x-coordinates of the data")
 plt.ylabel("y-coordinates of the data")
-plt.scatter(classA[0,:], classA[1,:], c = "red")
-plt.scatter(classB[0,:], classB[1,:], c = "green")
+# plt.scatter(classA[0,:], classA[1,:], c = "red")
+# plt.scatter(classB[0,:], classB[1,:], c = "green")
+plt.scatter(classA, classB, c = "red")
 
 x0_1 = np.amin(X_train[:, :])
 x0_2 = np.amax(X_train[:, :])
@@ -171,6 +225,6 @@ plt.figure(figsize=(10, 10))
 plt.xlabel("Number of epochs")
 plt.ylabel("Mean square error")
 plt.plot(MSE_delta, label = "MSE for delta rule")
-plt.plot(MSE_perceptron, label = "MSE for perceptron rule")
+#plt.plot(MSE_perceptron, label = "MSE for perceptron rule")
 plt.legend(framealpha=1, frameon=True)
 plt.show()

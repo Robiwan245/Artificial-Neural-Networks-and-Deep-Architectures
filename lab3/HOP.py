@@ -1,13 +1,20 @@
 import itertools
 import numpy as np
 import matplotlib.pyplot as plt
+from sympy import symmetric_poly
+from tqdm import tqdm
 
 class HOP:
     def __init__(self) -> None:
         self.theta = None
 
     def train(self, X):
-        self.theta = np.sum([x.reshape((-1,1))@x.reshape((1,-1)) for x in X], axis= 0)
+        if gauss_weights:
+            self.theta = np.array([[np.random.normal(0, 1) for _ in range(len(X[0]))] for _ in range(len(X[0]))])
+        elif symmetric_weights:
+            self.theta = np.array([[0.5 for _ in range(len(X[0]))] for _ in range(len(X[0]))])
+        else:
+            self.theta = np.sum([x.reshape((-1,1))@x.reshape((1,-1)) for x in X], axis= 0)
 
         count = 0
         for x in X:
@@ -58,6 +65,9 @@ class HOP:
         all_patterns = [list(i) for i in itertools.product([-1,1], repeat=8)]
         for pattern in all_patterns:
             attractors.add(tuple(self.recall(pattern, synchronous=True)))
+        print("________")
+        print(attractors)
+        print("________")
         
         return np.array([attractor for attractor in attractors])
     
@@ -66,6 +76,16 @@ class HOP:
         plt.imshow(x)
         plt.title("Pattern")
         plt.show()
+
+    def energy(self, x):
+        E = 0
+        for i in range(len(x)):
+            for j in range(len(x)):
+                E += - np.dot(self.theta[i, j], np.dot(x[i], x[j]))
+        return E
+
+gauss_weights = False
+symmetric_weights = False
 
 X = np.array([[-1,-1,1,-1,1,-1,-1,1],
                 [-1,-1,-1,-1,-1,1,-1,-1],
@@ -88,7 +108,10 @@ for x_distorted, x in zip(X_distorted, X):
 attractors = model.find_attractors()
 print("Found {} attractors:".format(len(attractors)))
 for attractor in attractors:
-       print(attractor)
+    print(attractor)
+#3.3
+    E_for_attractors = model.energy(attractor)
+    print(E_for_attractors)
 
 # 3.2
 pict = np.genfromtxt("pict.dat", delimiter = ',')
@@ -116,3 +139,50 @@ if (np.array_equal(p1, new_p10)):
     print("Same")
 model.display_pattern(p1)
 model.display_pattern(new_p10)
+
+#3.3
+E_for_pattern = model.energy(new_p10)
+print(E_for_pattern)
+
+#3.4
+noice_amount_max = 1024
+able_to_recall = []
+
+#3.4
+epochs = 1
+noice_amount_max = 1024
+able_to_recall = []
+
+attractor_to_test = p1
+for _ in tqdm(range(epochs)):
+    noice_amount = 0
+    while noice_amount <= noice_amount_max:
+        attractor_to_test_new = attractor_to_test.copy()
+        for i in range(noice_amount):
+            if attractor_to_test[i] == 1:
+                attractor_to_test_new[i] = -1
+            if attractor_to_test[i] == -1:
+                attractor_to_test_new[i] = 1
+        x_new = model.update(attractor_to_test_new, False)
+        # attractor_new = find_attractors(x_new)
+        # attractor_real = find_attractors(attractor_to_test)
+        # print("Real: " + str(attractor_real) + " and new: " + str(attractor_new))
+        if np.array_equal(x_new, attractor_to_test):
+            able_to_recall.append(1)
+        else:
+            sum = 0
+            for i in range(len(attractor_to_test)):
+                if attractor_to_test[i] == x_new[i]:
+                    sum += 1
+                else:
+                    sum += 0
+            able_to_recall.append(sum/len(attractor_to_test))
+        # x = x_new.reshape(32,32)
+        # plt.imshow(x)
+        # plt.title("Pattern")
+        # plt.show()
+        noice_amount += 1
+
+plt.figure()
+plt.plot(able_to_recall)
+plt.show()
