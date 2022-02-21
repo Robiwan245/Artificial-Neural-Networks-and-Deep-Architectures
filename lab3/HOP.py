@@ -152,24 +152,24 @@ p11 = data[10]
 #model.display_pattern(p1)
 #model.display_pattern(p10)
 
-X = np.array([p1,p2,p3])
-model.train(X)
-new_p10, iter = model.recall(p10,True, 100)
-if (np.array_equal(p1, new_p10)):
-    print("p1 and p10 same and converged after: ", str(iter), " iterations")
-model.display_pattern(p1)
-model.display_pattern(new_p10)
-new_p11, iter = model.recall(p11, True, 100)
-print("p11 cannot complete pattern because mix of two patterns but converges after: ", str(iter), " iterations")
-model.display_pattern(new_p11)
+# X = np.array([p1,p2,p3])
+# model.train(X)
+# new_p10, iter = model.recall(p10,True, 100)
+# if (np.array_equal(p1, new_p10)):
+#     print("p1 and p10 same and converged after: ", str(iter), " iterations")
+# model.display_pattern(p1)
+# model.display_pattern(new_p10)
+# new_p11, iter = model.recall(p11, True, 100)
+# print("p11 cannot complete pattern because mix of two patterns but converges after: ", str(iter), " iterations")
+# model.display_pattern(new_p11)
 
-new_p11, iter = model.recall(p11, False, 100, True)
-print("___Random Units___ \n Able to find combined pattern and converges after: ", str(iter), " iterations")
-model.display_pattern(new_p11)
+# new_p11, iter = model.recall(p11, False, 100, True)
+# print("___Random Units___ \n Able to find combined pattern and converges after: ", str(iter), " iterations")
+# model.display_pattern(new_p11)
 
-#display after each iteration
-print("___Random Units and display after iterations ___")
-new_p11, iter = model.recall(p11, False, 100, True, True)
+# #display after each iteration
+# print("___Random Units and display after iterations ___")
+# new_p11, iter = model.recall(p11, False, 100, True, True)
 
 #3.3 - Ralle my boy got my back on this one
 # attractors = model.find_attractors(isPatterns = True)
@@ -285,5 +285,176 @@ plt.show()
 # 300 random
 num_patterns = 300
 size_net = 100
-patterns = np.array([np.random.choice([-1,1], size_net) for _ in range(num_patterns)])
-print(patterns.shape)
+# all_patterns = np.array([np.random.choice([-1,1], size_net) for _ in range(num_patterns)])
+
+# success = np.zeros(300, dtype=np.float64)
+# weights = np.zeros((100,100))
+# weights += np.outer(all_patterns[0], all_patterns[0])
+
+def recall(w, x):
+    return np.sign(w.dot(x))
+
+# for i in range(1, 300):
+#     weights += np.outer(all_patterns[i], all_patterns[i])
+#     success_rate = 0
+#     for j in range(0, i-1):
+#         tmp_p = all_patterns[j]
+#         pred = recall(weights, tmp_p)
+#         if(np.array_equal(tmp_p, pred)):
+#             success_rate += 1
+#     success_rate = success_rate/i
+#     success[i] = success_rate
+# plt.plot(success)
+# plt.xlabel("Number of patterns stored")
+# plt.ylabel("Percentage of patterns that are stable")
+# plt.show()
+
+# noise 300 random
+all_patterns = np.array([np.random.choice([-1,1], size_net) for _ in range(num_patterns)])
+random_idx = [i for i in range(size_net)]
+np.random.shuffle(random_idx)
+noisy_patterns = np.array(all_patterns, copy=True)
+for i in range(num_patterns):
+    for j, idx in enumerate(random_idx):
+        noisy_patterns[i][idx] *= -1
+        if (j+1) % 40 == 0:
+            break
+
+success = np.zeros(300, dtype=np.float64)
+success_noisy = np.zeros(300)
+weights = np.zeros((100,100))
+weights += np.outer(all_patterns[0], all_patterns[0])
+
+def recall(w, x):
+    return np.sign(w.dot(x))
+
+for i in range(1, num_patterns):
+    weights += np.outer(all_patterns[i], all_patterns[i])
+    success_rate = 0
+    success_rate_noisy = 0
+    for j in range(0, i-1):
+        tmp_p_noisy = noisy_patterns[j]
+        tmp_p = all_patterns[j]
+        pred_noisy = recall(weights, tmp_p_noisy)
+        pred = recall(weights, tmp_p)
+        if(np.array_equal(tmp_p, pred_noisy)):
+            success_rate_noisy += 1
+        if(np.array_equal(tmp_p, pred)):
+            success_rate += 1
+    success_rate = success_rate/i
+    success_rate_noisy = success_rate_noisy/i
+    success[i] = success_rate
+    success_noisy[i] = success_rate_noisy
+
+line1 = plt.plot(success, color='r', label = 'no noise')
+line2 = plt.plot(success_noisy, color='b', label = 'noise')
+plt.title("Noisy vs no noise (with diag)")
+plt.xlabel("Number of patterns stored")
+plt.ylabel("Percentage of patterns that are stable")
+plt.legend((line1, line2), ('label1', 'label2'))
+plt.legend()
+plt.show()
+
+# noise 300 without diag
+all_patterns = np.array([np.random.choice([-1,1], size_net) for _ in range(num_patterns)])
+random_idx = [i for i in range(size_net)]
+np.random.shuffle(random_idx)
+noisy_patterns = np.array(all_patterns, copy=True)
+for i in range(num_patterns):
+    for j, idx in enumerate(random_idx):
+        noisy_patterns[i][idx] *= -1
+        if (j+1) % 10 == 0:
+            break
+
+success = np.zeros(300, dtype=np.float64)
+success_noisy = np.zeros(300)
+weights = np.zeros((100,100))
+weights += np.outer(all_patterns[0], all_patterns[0])
+
+def recall(w, x):
+    w = del_diag(w)
+    return np.sign(w.dot(x))
+
+def del_diag(w):
+    for i in range(w.shape[0]):
+        w[i][i] = 0
+    return w
+
+for i in range(1, num_patterns):
+    weights += np.outer(all_patterns[i], all_patterns[i])
+    success_rate = 0
+    success_rate_noisy = 0
+    for j in range(0, i-1):
+        tmp_p_noisy = noisy_patterns[j]
+        tmp_p = all_patterns[j]
+        pred_noisy = recall(weights, tmp_p_noisy)
+        pred = recall(weights, tmp_p)
+        if(np.array_equal(tmp_p, pred_noisy)):
+            success_rate_noisy += 1
+        if(np.array_equal(tmp_p, pred)):
+            success_rate += 1
+    success_rate = success_rate/i
+    success_rate_noisy = success_rate_noisy/i
+    success[i] = success_rate
+    success_noisy[i] = success_rate_noisy
+
+line1 = plt.plot(success, color='r', label = 'no noise')
+line2 = plt.plot(success_noisy, color='b', label = 'noise')
+plt.title("Noisy vs no noise (without diag)")
+plt.xlabel("Number of patterns stored")
+plt.ylabel("Percentage of patterns that are stable")
+plt.legend((line1, line2), ('label1', 'label2'))
+plt.legend()
+plt.show()
+
+# noise 300 without diag + bias
+all_patterns = np.array([np.random.choice([-1,1], size_net, p=[0.75,0.25]) for _ in range(num_patterns)])
+random_idx = [i for i in range(size_net)]
+np.random.shuffle(random_idx)
+noisy_patterns = np.array(all_patterns, copy=True)
+for i in range(num_patterns):
+    for j, idx in enumerate(random_idx):
+        noisy_patterns[i][idx] *= -1
+        if (j+1) % 10 == 0:
+            break
+
+success = np.zeros(300, dtype=np.float64)
+success_noisy = np.zeros(300)
+weights = np.zeros((100,100))
+weights += np.outer(all_patterns[0], all_patterns[0])
+
+def recall(w, x):
+    w = del_diag(w)
+    return np.sign(w.dot(x))
+
+def del_diag(w):
+    for i in range(w.shape[0]):
+        w[i][i] = 0
+    return w
+
+for i in range(1, num_patterns):
+    weights += np.outer(all_patterns[i], all_patterns[i])
+    success_rate = 0
+    success_rate_noisy = 0
+    for j in range(0, i-1):
+        tmp_p_noisy = noisy_patterns[j]
+        tmp_p = all_patterns[j]
+        pred_noisy = recall(weights, tmp_p_noisy)
+        pred = recall(weights, tmp_p)
+        if(np.array_equal(tmp_p, pred_noisy)):
+            success_rate_noisy += 1
+        if(np.array_equal(tmp_p, pred)):
+            success_rate += 1
+    success_rate = success_rate/i
+    success_rate_noisy = success_rate_noisy/i
+    success[i] = success_rate
+    success_noisy[i] = success_rate_noisy
+
+line1 = plt.plot(success, color='r', label = 'no noise')
+line2 = plt.plot(success_noisy, color='b', label = 'noise')
+plt.title("Noisy vs no noise (without diag + bias)")
+plt.xlabel("Number of patterns stored")
+plt.ylabel("Percentage of patterns that are stable")
+plt.legend((line1, line2), ('label1', 'label2'))
+plt.legend()
+plt.show()
