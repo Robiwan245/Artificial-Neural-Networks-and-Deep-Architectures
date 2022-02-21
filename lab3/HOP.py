@@ -8,7 +8,7 @@ import random
 class HOP:
     def __init__(self) -> None:
         self.theta = None
-        self.pos_to_update = []
+        self.pos_to_update = None
 
     def train(self, X, gauss_weights=False, symmetric_weights=False, N=3, check=True):
         if gauss_weights:
@@ -56,7 +56,7 @@ class HOP:
         iter = 0
         while iter<max_iter:
             x_updated = self.update(x, synchronous, isRandom=isRandom)
-            if disp and iter%100 == 0:
+            if disp:
                 self.display_pattern(x_updated)
 
             if np.array_equal(x, x_updated) and not disp:
@@ -149,27 +149,27 @@ p9 = data[8]
 p10 = data[9]
 p11 = data[10]
 
-# #model.display_pattern(p1)
-# #model.display_pattern(p10)
+#model.display_pattern(p1)
+#model.display_pattern(p10)
 
-# X = np.array([p1,p2,p3])
-# model.train(X)
-# new_p10, iter = model.recall(p10,True, 100)
-# if (np.array_equal(p1, new_p10)):
-#     print("p1 and p10 same and converged after: ", str(iter), " iterations")
-# model.display_pattern(p1)
-# model.display_pattern(new_p10)
-# new_p11, iter = model.recall(p11, True, 100)
-# print("p11 cannot complete pattern because mix of two patterns but converges after: ", str(iter), " iterations")
-# model.display_pattern(new_p11)
+X = np.array([p1,p2,p3])
+model.train(X)
+new_p10, iter = model.recall(p10,True, 100)
+if (np.array_equal(p1, new_p10)):
+    print("p1 and p10 same and converged after: ", str(iter), " iterations")
+model.display_pattern(p1)
+model.display_pattern(new_p10)
+new_p11, iter = model.recall(p11, True, 100)
+print("p11 cannot complete pattern because mix of two patterns but converges after: ", str(iter), " iterations")
+model.display_pattern(new_p11)
 
-# new_p11, iter = model.recall(p11, False, 100, True)
-# print("___Random Units___ \n Able to find combined pattern and converges after: ", str(iter), " iterations")
-# model.display_pattern(new_p11)
+new_p11, iter = model.recall(p11, False, 100, True)
+print("___Random Units___ \n Able to find combined pattern and converges after: ", str(iter), " iterations")
+model.display_pattern(new_p11)
 
-# display after each iteration
-#print("___Random Units and display after iterations ___")
-#new_p11, iter = model.recall(p11, False, 1000, True, True)
+#display after each iteration
+print("___Random Units and display after iterations ___")
+new_p11, iter = model.recall(p11, False, 100, True, True)
 
 #3.3 - Ralle my boy got my back on this one
 # attractors = model.find_attractors(isPatterns = True)
