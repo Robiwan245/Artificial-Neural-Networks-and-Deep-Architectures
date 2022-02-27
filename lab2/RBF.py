@@ -13,10 +13,13 @@ def rbf(x, mean, variance):
     return phi
 
 def k_means(x, lr, k, epochs, dead_node):
-    clusters = x[np.random.choice(len(x), k)]
+    #clusters = np.array([[np.random.choice(x[np.random.randint(0, len(x))])] for i in range(k)])
+    #clusters = x[np.random.choice(len(x), k)]
+    clusters = x[np.arange(k)]
 
     for _ in tqdm(range(epochs)):
-        point = [np.random.choice(x[np.random.randint(0, len(x))])]
+        #point = [np.random.choice(x[np.random.randint(0, len(x)), :])]
+        point = x[np.random.randint(0, len(x)), :] 
         distances = []
 
         for node in clusters:
@@ -44,7 +47,8 @@ class RBF:
 
     def fit(self, x, y):
         if self.competitive_learning:
-            clusters = k_means(X.copy(), self.lr, self.k, self.epochs, self.dead_node)
+            print(self.k)
+            clusters = k_means(x.copy(), self.lr, self.k, self.epochs, self.dead_node)
         else:
             clusters = np.array([[np.random.choice(x[np.random.randint(0, len(x))])] for i in range(self.k)])
             #clusters = np.array([np.random.randint(0, 5, self.k)])
@@ -122,31 +126,42 @@ if noise and ballist:
 # plt.legend()
 # plt.show()
 
-variance = 0.1
+variance = 0.2
 lr = 0.2
 epochs = 10000
 ks= [50, 100, 200]
 
 fig, ax = plt.subplots()
 
-ax.scatter(X, y, label='Real output')
+#ax.scatter(X, y, label='Real output')
 acc = 0
-
-print(X)
-print(y)
-
-for _ in range(10):
     #for k in ks:
 
-        model = RBF(lr, variance, epochs, 200, competitive_learning, batch, dead_node)
+model = RBF(lr, variance, epochs, 10, competitive_learning, batch, dead_node)
+for _ in range(1):
         w, clusters = model.fit(X, y)
         y_predicted = model.predict(X_test, clusters, w)
         accuracy = mae(y_test, y_predicted)
         acc += accuracy
         print("Accuracy for " + str(200) + " components as mean absolute error: " + str(accuracy))
 
-        ax.scatter(X_test, y_predicted, label=(str(200) + ' hidden nodes'))
+        #ax.scatter(X_test, y_predicted, label=(str(200) + ' hidden nodes'))
+        #x_grid, y_grid = np.meshgrid(X_test, y_predicted)
+        #ax.contour(X_test, y_predicted, y_test)
+        #ax.add_artist(plt.Circle((X_test[0][0], y_predicted[0][0]), variance))
+        #ax.set_aspect( 1 )
         #plt.title("Approximation of sine wave by RBF without CL with " + str(k) + " clusters")
-        legend = ax.legend(loc="upper right")
+        #legend = ax.legend(loc="upper right")
 #print(acc / 10)
-        plt.show()
+# for i in tqdm(range(len(clusters))):
+#     for j in range(len(y_predicted[0])):
+for i in range(len(clusters)):
+    ax.add_artist(plt.Circle(clusters[i], variance, alpha=0.1))
+        # angle = np.linspace((X_test[i][j], y_predicted[i][j]) , 2 * np.pi)
+        # x_circ = 0.1 * np.cos( angle ) 
+        # y_circ = 0.1 * np.sin( angle )
+        # ax.plot(x_circ, y_circ)
+ax.scatter(X_test, y_test, c='red')
+plt.xlabel("Distance")
+plt.ylabel("Height")
+plt.show()
