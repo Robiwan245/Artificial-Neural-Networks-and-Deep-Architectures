@@ -105,7 +105,9 @@ class RestrictedBoltzmannMachine():
     def update_params(self,v_0,h_0,v_k,h_k):
 
         """Update the weight and bias parameters.
+
         You could also add weight decay and momentum for weight updates.
+
         Args:
            v_0: activities or probabilities of visible layer (data to the rbm)
            h_0: activities or probabilities of hidden layer
@@ -301,4 +303,4 @@ class RestrictedBoltzmannMachine():
         self.weight_v_to_h += self.delta_weight_v_to_h
         self.bias_h += self.delta_bias_h
         
-        return  
+        return    

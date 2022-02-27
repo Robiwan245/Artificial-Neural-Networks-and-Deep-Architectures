@@ -11,24 +11,16 @@ if __name__ == "__main__":
     
     print ("\nStarting a Restricted Boltzmann Machine..")
 
-    plt.figure()
-    errors = []
-
-    for dims in [200, 500]:
-
-        rbm = RestrictedBoltzmannMachine(ndim_visible=image_size[0]*image_size[1],
-                                        ndim_hidden=dims,
-                                        is_bottom=True,
-                                        image_size=image_size,
-                                        is_top=False,
-                                        n_labels=10,
-                                        batch_size=10
-        )
-        
-        errors.append(rbm.cd1(visible_trainset=train_imgs, n_iterations=50))
-    plt.plot(errors[0])
-    plt.plot(errors[1])
-    plt.show()
+    rbm = RestrictedBoltzmannMachine(ndim_visible=image_size[0]*image_size[1],
+                                     ndim_hidden=200,
+                                     is_bottom=True,
+                                     image_size=image_size,
+                                     is_top=False,
+                                     n_labels=10,
+                                     batch_size=10
+    )
+    
+    rbm.cd1(visible_trainset=train_imgs, n_iterations=10000)
     
     ''' deep- belief net '''
 
