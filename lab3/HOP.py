@@ -21,7 +21,7 @@ class HOP:
         if check:
             count = 0
             for x in X:
-                x_recalled = self.recall(x, synchronous=True)
+                x_recalled, _ = self.recall(x, True,100,False,False)
                 if np.array_equal(x, x_recalled):
                     count += 1
                 else:
@@ -69,8 +69,8 @@ class HOP:
 
         return x_updated, iter
     
-    def check_recall(self, X, X_expected, synchronous = False, max_iter=1):
-        X_recalled = self.recall(X, synchronous, max_iter=max_iter)
+    def check_recall(self, X, X_expected, synchronous = False, max_iter=10):
+        X_recalled,_ = self.recall(X, synchronous, max_iter=max_iter)
         same = np.array_equal(X_recalled, X_expected)
         print(X_recalled, " -> ", X_expected, " ", "Successfully recalled" if same else "Failed recall" )
     
@@ -98,40 +98,40 @@ class HOP:
                 E += - np.dot(self.theta[i, j], np.dot(x[i], x[j]))
         return E
 
-# X = np.array([[-1,-1,1,-1,1,-1,-1,1],
-#                 [-1,-1,-1,-1,-1,1,-1,-1],
-#                 [-1,1,1,-1,-1,1,-1,1]])
+X = np.array([[-1,-1,1,-1,1,-1,-1,1],
+                [-1,-1,-1,-1,-1,1,-1,-1],
+                [-1,1,1,-1,-1,1,-1,1]])
 model = HOP()
-# model.train(X)
-# X_distorted = np.array([[1, -1, 1, -1, 1, -1, -1, 1],
-#                         [1, 1, -1, -1, -1, 1, -1, -1],
-#                         [1, 1, 1, -1, 1, 1, -1, 1]])
+model.train(X, N=3)
+X_distorted = np.array([[1, -1, 1, -1, 1, -1, -1, 1],
+                        [1, 1, -1, -1, -1, 1, -1, -1],
+                        [1, 1, 1, -1, 1, 1, -1, 1]])
 
 # # 3.1
-# print("Synchronous")
-# for x_distorted, x in zip(X_distorted, X):                    
-#     model.check_recall(x_distorted, x, synchronous = True)
-# print("Asynchronous")
-# for x_distorted, x in zip(X_distorted, X):   
-#     model.check_recall(x_distorted, x, synchronous = False)
+print("Synchronous")
+for x_distorted, x in zip(X_distorted, X):                    
+    model.check_recall(x_distorted, x, synchronous = True)
+print("Asynchronous")
+for x_distorted, x in zip(X_distorted, X):   
+    model.check_recall(x_distorted, x, synchronous = False)
 
-# attractors = model.find_attractors()
-# print("Found {} attractors:".format(len(attractors)))
-# for attractor in attractors:
-#     print(attractor)
+attractors = model.find_attractors()
+print("Found {} attractors:".format(len(attractors)))
+for attractor in attractors:
+    print(attractor)
 
-# # 5 bit error
-# X_5bit_err = np.array([[1,1,-1,1,-1,-1,-1,-1],
-#                         [-1,-1,1,1,1,1,-1,-1],
-#                         [-1,-1,-1,1,1,1,-1,-1]])
+# 5 bit error
+X_5bit_err = np.array([[1,1,-1,1,-1,-1,-1,-1],
+                        [-1,-1,1,1,1,1,-1,-1],
+                        [-1,-1,-1,1,1,1,-1,-1]])
 
-# print("5 bit error:")
-# print("Synchronous")
-# for x_5bit_err, x in zip(X_5bit_err, X):                    
-#     model.check_recall(x_5bit_err, x, synchronous = True)
-# print("Asynchronous")
-# for x_5bit_err, x in zip(X_5bit_err, X):   
-#     model.check_recall(x_5bit_err, x, synchronous = False)
+print("5 bit error:")
+print("Synchronous")
+for x_5bit_err, x in zip(X_5bit_err, X):                    
+    model.check_recall(x_5bit_err, x, synchronous = True)
+print("Asynchronous")
+for x_5bit_err, x in zip(X_5bit_err, X):   
+    model.check_recall(x_5bit_err, x, synchronous = False)
 
 # # 3.2
 pict = np.genfromtxt("pict.dat", delimiter = ',')
@@ -152,8 +152,8 @@ p11 = data[10]
 #model.display_pattern(p1)
 #model.display_pattern(p10)
 
-# X = np.array([p1,p2,p3])
-# model.train(X)
+X = np.array([p1,p2,p3])
+model.train(X)
 # new_p10, iter = model.recall(p10,True, 100)
 # if (np.array_equal(p1, new_p10)):
 #     print("p1 and p10 same and converged after: ", str(iter), " iterations")
@@ -310,105 +310,105 @@ def recall(w, x):
 # plt.show()
 
 # noise 300 random
-all_patterns = np.array([np.random.choice([-1,1], size_net) for _ in range(num_patterns)])
-random_idx = [i for i in range(size_net)]
-np.random.shuffle(random_idx)
-noisy_patterns = np.array(all_patterns, copy=True)
-for i in range(num_patterns):
-    for j, idx in enumerate(random_idx):
-        noisy_patterns[i][idx] *= -1
-        if (j+1) % 40 == 0:
-            break
+# all_patterns = np.array([np.random.choice([-1,1], size_net) for _ in range(num_patterns)])
+# random_idx = [i for i in range(size_net)]
+# np.random.shuffle(random_idx)
+# noisy_patterns = np.array(all_patterns, copy=True)
+# for i in range(num_patterns):
+#     for j, idx in enumerate(random_idx):
+#         noisy_patterns[i][idx] *= -1
+#         if (j+1) % 40 == 0:
+#             break
 
-success = np.zeros(300, dtype=np.float64)
-success_noisy = np.zeros(300)
-weights = np.zeros((100,100))
-weights += np.outer(all_patterns[0], all_patterns[0])
+# success = np.zeros(300, dtype=np.float64)
+# success_noisy = np.zeros(300)
+# weights = np.zeros((100,100))
+# weights += np.outer(all_patterns[0], all_patterns[0])
 
-def recall(w, x):
-    return np.sign(w.dot(x))
+# def recall(w, x):
+#     return np.sign(w.dot(x))
 
-for i in range(1, num_patterns):
-    weights += np.outer(all_patterns[i], all_patterns[i])
-    success_rate = 0
-    success_rate_noisy = 0
-    for j in range(0, i-1):
-        tmp_p_noisy = noisy_patterns[j]
-        tmp_p = all_patterns[j]
-        pred_noisy = recall(weights, tmp_p_noisy)
-        pred = recall(weights, tmp_p)
-        if(np.array_equal(tmp_p, pred_noisy)):
-            success_rate_noisy += 1
-        if(np.array_equal(tmp_p, pred)):
-            success_rate += 1
-    success_rate = success_rate/i
-    success_rate_noisy = success_rate_noisy/i
-    success[i] = success_rate
-    success_noisy[i] = success_rate_noisy
+# for i in range(1, num_patterns):
+#     weights += np.outer(all_patterns[i], all_patterns[i])
+#     success_rate = 0
+#     success_rate_noisy = 0
+#     for j in range(0, i-1):
+#         tmp_p_noisy = noisy_patterns[j]
+#         tmp_p = all_patterns[j]
+#         pred_noisy = recall(weights, tmp_p_noisy)
+#         pred = recall(weights, tmp_p)
+#         if(np.array_equal(tmp_p, pred_noisy)):
+#             success_rate_noisy += 1
+#         if(np.array_equal(tmp_p, pred)):
+#             success_rate += 1
+#     success_rate = success_rate/i
+#     success_rate_noisy = success_rate_noisy/i
+#     success[i] = success_rate
+#     success_noisy[i] = success_rate_noisy
 
-line1 = plt.plot(success, color='r', label = 'no noise')
-line2 = plt.plot(success_noisy, color='b', label = 'noise')
-plt.title("Noisy vs no noise (with diag)")
-plt.xlabel("Number of patterns stored")
-plt.ylabel("Percentage of patterns that are stable")
-plt.legend((line1, line2), ('label1', 'label2'))
-plt.legend()
-plt.show()
+# line1 = plt.plot(success, color='r', label = 'no noise')
+# line2 = plt.plot(success_noisy, color='b', label = 'noise')
+# plt.title("Noisy vs no noise (with diag)")
+# plt.xlabel("Number of patterns stored")
+# plt.ylabel("Percentage of patterns that are stable")
+# plt.legend((line1, line2), ('label1', 'label2'))
+# plt.legend()
+# plt.show()
 
-# noise 300 without diag
-all_patterns = np.array([np.random.choice([-1,1], size_net) for _ in range(num_patterns)])
-random_idx = [i for i in range(size_net)]
-np.random.shuffle(random_idx)
-noisy_patterns = np.array(all_patterns, copy=True)
-for i in range(num_patterns):
-    for j, idx in enumerate(random_idx):
-        noisy_patterns[i][idx] *= -1
-        if (j+1) % 10 == 0:
-            break
+# # noise 300 without diag
+# all_patterns = np.array([np.random.choice([-1,1], size_net) for _ in range(num_patterns)])
+# random_idx = [i for i in range(size_net)]
+# np.random.shuffle(random_idx)
+# noisy_patterns = np.array(all_patterns, copy=True)
+# for i in range(num_patterns):
+#     for j, idx in enumerate(random_idx):
+#         noisy_patterns[i][idx] *= -1
+#         if (j+1) % 10 == 0:
+#             break
 
-success = np.zeros(300, dtype=np.float64)
-success_noisy = np.zeros(300)
-weights = np.zeros((100,100))
-weights += np.outer(all_patterns[0], all_patterns[0])
+# success = np.zeros(300, dtype=np.float64)
+# success_noisy = np.zeros(300)
+# weights = np.zeros((100,100))
+# weights += np.outer(all_patterns[0], all_patterns[0])
 
-def recall(w, x):
-    w = del_diag(w)
-    return np.sign(w.dot(x))
+# def recall(w, x):
+#     w = del_diag(w)
+#     return np.sign(w.dot(x))
 
-def del_diag(w):
-    for i in range(w.shape[0]):
-        w[i][i] = 0
-    return w
+# def del_diag(w):
+#     for i in range(w.shape[0]):
+#         w[i][i] = 0
+#     return w
 
-for i in range(1, num_patterns):
-    weights += np.outer(all_patterns[i], all_patterns[i])
-    success_rate = 0
-    success_rate_noisy = 0
-    for j in range(0, i-1):
-        tmp_p_noisy = noisy_patterns[j]
-        tmp_p = all_patterns[j]
-        pred_noisy = recall(weights, tmp_p_noisy)
-        pred = recall(weights, tmp_p)
-        if(np.array_equal(tmp_p, pred_noisy)):
-            success_rate_noisy += 1
-        if(np.array_equal(tmp_p, pred)):
-            success_rate += 1
-    success_rate = success_rate/i
-    success_rate_noisy = success_rate_noisy/i
-    success[i] = success_rate
-    success_noisy[i] = success_rate_noisy
+# for i in range(1, num_patterns):
+#     weights += np.outer(all_patterns[i], all_patterns[i])
+#     success_rate = 0
+#     success_rate_noisy = 0
+#     for j in range(0, i-1):
+#         tmp_p_noisy = noisy_patterns[j]
+#         tmp_p = all_patterns[j]
+#         pred_noisy = recall(weights, tmp_p_noisy)
+#         pred = recall(weights, tmp_p)
+#         if(np.array_equal(tmp_p, pred_noisy)):
+#             success_rate_noisy += 1
+#         if(np.array_equal(tmp_p, pred)):
+#             success_rate += 1
+#     success_rate = success_rate/i
+#     success_rate_noisy = success_rate_noisy/i
+#     success[i] = success_rate
+#     success_noisy[i] = success_rate_noisy
 
-line1 = plt.plot(success, color='r', label = 'no noise')
-line2 = plt.plot(success_noisy, color='b', label = 'noise')
-plt.title("Noisy vs no noise (without diag)")
-plt.xlabel("Number of patterns stored")
-plt.ylabel("Percentage of patterns that are stable")
-plt.legend((line1, line2), ('label1', 'label2'))
-plt.legend()
-plt.show()
+# line1 = plt.plot(success, color='r', label = 'no noise')
+# line2 = plt.plot(success_noisy, color='b', label = 'noise')
+# plt.title("Noisy vs no noise (without diag)")
+# plt.xlabel("Number of patterns stored")
+# plt.ylabel("Percentage of patterns that are stable")
+# plt.legend((line1, line2), ('label1', 'label2'))
+# plt.legend()
+# plt.show()
 
 # noise 300 without diag + bias
-all_patterns = np.array([np.random.choice([-1,1], size_net, p=[0.75,0.25]) for _ in range(num_patterns)])
+all_patterns = np.array([np.random.choice([-1,1], size_net, p=[0.25,0.75]) for _ in range(num_patterns)])
 random_idx = [i for i in range(size_net)]
 np.random.shuffle(random_idx)
 noisy_patterns = np.array(all_patterns, copy=True)
