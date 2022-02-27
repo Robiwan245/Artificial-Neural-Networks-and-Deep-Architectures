@@ -20,7 +20,10 @@ if __name__ == "__main__":
                                      batch_size=10
     )
     
-    rbm.cd1(visible_trainset=train_imgs, n_iterations=10000)
+    errors = rbm.cd1(visible_trainset=train_imgs, n_iterations=20)
+    plt.figure()
+    plt.plot(errors)
+    plt.show()
     
     ''' deep- belief net '''
 

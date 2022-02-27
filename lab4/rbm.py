@@ -1,4 +1,5 @@
 from util import *
+from tqdm import tqdm
 
 class RestrictedBoltzmannMachine():
     '''
@@ -78,28 +79,46 @@ class RestrictedBoltzmannMachine():
         
         n_samples = visible_trainset.shape[0]
         err = 0
+        errors = []
+        elements = int(n_samples / self.batch_size)
 
-        for it in range(n_iterations):
-
+        for it in tqdm(range(n_iterations)):
+            for i in tqdm(range(elements)):
 	    # [TODO TASK 4.1] run k=1 alternating Gibbs sampling : v_0 -> h_0 ->  v_1 -> h_1.
             # you may need to use the inference functions 'get_h_given_v' and 'get_v_given_h'.
             # note that inference methods returns both probabilities and activations (samples from probablities) and you may have to decide when to use what.
 
-            # [TODO TASK 4.1] update the parameters using function 'update_params'
-            
-            # visualize once in a while when visible layer is input images
-            
-            if it % self.rf["period"] == 0 and self.is_bottom:
+                init = int(i % elements)
+                stop = int((init + 1) * self.batch_size)
+                init *= self.batch_size
+                v_0 = visible_trainset[init:stop, :]
+                prob_h_0, h_0 = self.get_h_given_v(v_0)
+                prob_v_1, v_1 = self.get_v_given_h(h_0)
+                prob_h_1, h_1 = self.get_h_given_v(v_1)
+
+                # [TODO TASK 4.1] update the parameters using function 'update_params'
                 
+            self.update_params(v_0, h_0, v_1, h_1)
+
+            # visualize once in a while when visible layer is input images
+                
+            if it % self.rf["period"] == 0 and self.is_bottom:
+                    
                 viz_rf(weights=self.weight_vh[:,self.rf["ids"]].reshape((self.image_size[0],self.image_size[1],-1)), it=it, grid=self.rf["grid"])
 
             # print progress
-            
+                
+            hidden_restored = self.get_h_given_v(v_0)[1]
+            v_restored = self.get_v_given_h(hidden_restored)[1]
+            errors.append(np.linalg.norm(v_0 - v_restored))
+
+            #print ("iteration=%7d recon_loss=%4.4f"%(it, np.linalg.norm(v_0 - v_restored)))
+
             if it % self.print_period == 0 :
 
                 print ("iteration=%7d recon_loss=%4.4f"%(it, np.linalg.norm(visible_trainset - visible_trainset)))
         
-        return
+        return errors
     
 
     def update_params(self,v_0,h_0,v_k,h_k):
@@ -118,9 +137,9 @@ class RestrictedBoltzmannMachine():
 
         # [TODO TASK 4.1] get the gradients from the arguments (replace the 0s below) and update the weight and bias parameters
         
-        self.delta_bias_v += 0
-        self.delta_weight_vh += 0
-        self.delta_bias_h += 0
+        self.delta_bias_v += self.learning_rate * np.sum((v_0 - v_k), axis = 0)
+        self.delta_weight_vh += self.learning_rate * np.dot(v_0.T, h_0) - np.dot(v_k.T, h_k)
+        self.delta_bias_h += self.learning_rate * np.sum((h_0 - h_k), axis = 0)
         
         self.bias_v += self.delta_bias_v
         self.weight_vh += self.delta_weight_vh
@@ -185,7 +204,7 @@ class RestrictedBoltzmannMachine():
         else:
                         
             # [TODO TASK 4.1] compute probabilities and activations (samples from probabilities) of visible layer (replace the pass and zeros below)             
-            prob_v = sigmoid(self.bias_v + hidden_minibatch@self.weight_vh)
+            prob_v = sigmoid(self.bias_v + hidden_minibatch@self.weight_vh.T)
             sample_v = sample_binary(prob_v)
         
         return prob_v, sample_v
