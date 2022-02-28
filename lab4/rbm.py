@@ -57,7 +57,7 @@ class RestrictedBoltzmannMachine():
         
         self.momentum = 0.7
 
-        self.print_period = 5000
+        self.print_period = 2
         
         self.rf = { # receptive-fields. Only applicable when visible layer is input data
             "period" : 5000, # iteration period to visualize
@@ -84,26 +84,26 @@ class RestrictedBoltzmannMachine():
 
         for it in range(n_iterations):
             #we have to update according to each sample we get:
-            for sample_nr in range(n_samples//self.batch_size):
-                samp = visible_trainset[(sample_nr * self.batch_size):(sample_nr * self.batch_size + self.batch_size)]
+            for sample_nr in range(0,n_samples,self.batch_size):
+                #samp = visible_trainset[(sample_nr):(sample_nr + self.batch_size)]
+                samp = visible_trainset[sample_nr: min(sample_nr + self.batch_size, n_samples)]
+                #gibbs_sampling
                 prob_h, sample_h_1 = self.get_h_given_v(samp)
+
                 prob_v, sample_v = self.get_v_given_h(sample_h_1)
                 prob_h, sample_h = self.get_h_given_v(sample_v)
-                self.update_params(samp,sample_h_1,prob_v,prob_h)
+                self.update_params(samp,sample_h_1,sample_v,sample_h)
 
             if it % 4 == 0 and self.is_bottom:
                 viz_rf(weights=self.weight_vh[:,self.rf["ids"]].reshape((self.image_size[0],self.image_size[1],-1)), it=it, grid=self.rf["grid"])
-            #reconstraction error
 
+            #reconstraction error
             prob_h, sample_h = self.get_h_given_v(visible_trainset)
             prob_v, sample_v = self.get_v_given_h(sample_h)
-            err= np.linalg.norm(visible_trainset-sample_v)
-            print(err)
             # print progress
 
             if it % self.print_period == 0 :
-
-                print ("iteration=%7d recon_loss=%4.4f"%(it, np.linalg.norm(visible_trainset - visible_trainset)))
+                print ("iteration=%7d recon_loss=%4.4f"%(it, np.linalg.norm(visible_trainset - sample_v)*(1/n_samples)))
         return
     
 
@@ -123,7 +123,7 @@ class RestrictedBoltzmannMachine():
 
         self.delta_bias_v = self.delta_bias_v * self.momentum + self.learning_rate * np.sum(v_0 - v_k)/self.batch_size#(np.mean(v_0) - np.mean(v_k))
         self.delta_weight_vh = self.delta_weight_vh * self.momentum + self.learning_rate*((np.dot(np.transpose(v_0),h_0)- np.dot(np.transpose(v_k),h_k))/self.batch_size)
-        self.delta_bias_h = self.delta_bias_h * self.momentum + self.learning_rate * np.sum(h_0-h_k)/self.batch_size#(np.mean(h_0) - np.mean(h_k))
+        self.delta_bias_h = self.delta_bias_h * self.momentum + self.learning_rate * np.sum(h_0 - h_k)/self.batch_size#(np.mean(h_0) - np.mean(h_k))
         
         self.bias_v += self.delta_bias_v
         self.weight_vh += self.delta_weight_vh
