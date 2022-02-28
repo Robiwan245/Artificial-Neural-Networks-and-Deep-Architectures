@@ -92,7 +92,7 @@ class RestrictedBoltzmannMachine():
 
                 prob_v, sample_v = self.get_v_given_h(sample_h_1)
                 prob_h, sample_h = self.get_h_given_v(sample_v)
-                self.update_params(samp,sample_h_1,sample_v,sample_h)
+                self.update_params(samp,sample_h_1,prob_v,prob_h)
 
             if it % 4 == 0 and self.is_bottom:
                 viz_rf(weights=self.weight_vh[:,self.rf["ids"]].reshape((self.image_size[0],self.image_size[1],-1)), it=it, grid=self.rf["grid"])
@@ -103,7 +103,7 @@ class RestrictedBoltzmannMachine():
             # print progress
 
             if it % self.print_period == 0 :
-                print ("iteration=%7d recon_loss=%4.4f"%(it, np.linalg.norm(visible_trainset - sample_v)*(1/n_samples)))
+                print ("iteration=%7d recon_loss=%4.4f"%(it, np.linalg.norm(visible_trainset - prob_v)*(1/n_samples)))
         return
     
 
@@ -166,14 +166,22 @@ class RestrictedBoltzmannMachine():
         
         assert self.weight_vh is not None
         if self.is_top:
-
+            # Note that this section can also be postponed until TASK 4.2, since in this task, stand-alone RBMs do not contain labels in visible layer
             """
             Here visible layer has both data and labels. Compute total input for each unit (identical for both cases), \ 
             and split into two parts, something like support[:, :-self.n_labels] and support[:, -self.n_labels:]. \
             Then, for both parts, use the appropriate activation function to get probabilities and a sampling method \
             to get activities. The probabilities as well as activities can then be concatenated back into a normal visible layer.
             """
-            
+            support = self.bias_v + np.dot(hidden_minibatch, np.transpose(self.weight_vh))
+            prob_v = np.array(shape = support.shape)
+            sample_v = np.array(shape=support.shape)
+
+            prob_v[:, :-self.n_labels] = sigmoid(support[:, :-self.n_labels])
+            sample_v[:, :-self.n_labels] = sample_binary(prob_v[:, :-self.n_labels])
+
+            prob_v[:, -self.n_labels:] = softmax(support[:, -self.n_labels:])
+            sample_v[:, -self.n_labels:] = sample_categorical(prob_v[:, -self.n_labels:])
         else:
             prob_v = sigmoid(self.bias_v + np.dot(hidden_minibatch, np.transpose(self.weight_vh)))
             sample_v = sample_binary(prob_v)
@@ -207,11 +215,11 @@ class RestrictedBoltzmannMachine():
         
         assert self.weight_v_to_h is not None
 
-        n_samples = visible_minibatch.shape[0]
 
-        # [TODO TASK 4.2] perform same computation as the function 'get_h_given_v' but with directed connections (replace the zeros below) 
-        
-        return np.zeros((n_samples,self.ndim_hidden)), np.zeros((n_samples,self.ndim_hidden))
+        prob_h = sigmoid(self.bias_h + np.dot(visible_minibatch, self.weight_v_to_h))
+        sample_h = sample_binary(prob_h)
+
+        return prob_h, sample_h
 
 
     def get_v_given_h_dir(self,hidden_minibatch):
@@ -231,6 +239,7 @@ class RestrictedBoltzmannMachine():
         assert self.weight_h_to_v is not None
         
         n_samples = hidden_minibatch.shape[0]
+        support = self.bias_v + np.dot(hidden_minibatch, np.transpose(self.weight_h_to_v))
         
         if self.is_top:
 
@@ -241,19 +250,23 @@ class RestrictedBoltzmannMachine():
             to get activities. The probabilities as well as activities can then be concatenated back into a normal visible layer.
             """
             
-            # [TODO TASK 4.2] Note that even though this function performs same computation as 'get_v_given_h' but with directed connections,
             # this case should never be executed : when the RBM is a part of a DBN and is at the top, it will have not have directed connections.
             # Appropriate code here is to raise an error (replace pass below)
-            
-            pass
+
+            prob_v = np.array(shape=support.shape)
+            sample_v = np.array(shape=support.shape)
+
+            prob_v[:, :-self.n_labels] = sigmoid(support[:, :-self.n_labels])
+            sample_v[:, :-self.n_labels] = sample_binary(prob_v[:, :-self.n_labels])
+
+            prob_v[:, -self.n_labels:] = softmax(support[:, -self.n_labels:])
+            sample_v[:, -self.n_labels:] = sample_categorical(prob_v[:, -self.n_labels:])
             
         else:
-                        
-            # [TODO TASK 4.2] performs same computaton as the function 'get_v_given_h' but with directed connections (replace the pass and zeros below)             
+            prob_v = sigmoid(support)
+            sample_v = sample_binary(prob_v)
 
-            pass
-            
-        return np.zeros((n_samples,self.ndim_visible)), np.zeros((n_samples,self.ndim_visible))        
+        return prob_v, sample_v
         
     def update_generate_params(self,inps,trgs,preds):
         
