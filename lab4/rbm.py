@@ -91,13 +91,13 @@ class RestrictedBoltzmannMachine():
                 prob_h, sample_h = self.get_h_given_v(sample_v)
                 self.update_params(samp,sample_h_1,prob_v,prob_h)
 
-            if it % 5 == 0 and self.is_bottom:
+            if it % 4 == 0 and self.is_bottom:
                 viz_rf(weights=self.weight_vh[:,self.rf["ids"]].reshape((self.image_size[0],self.image_size[1],-1)), it=it, grid=self.rf["grid"])
             #reconstraction error
 
             prob_h, sample_h = self.get_h_given_v(visible_trainset)
             prob_v, sample_v = self.get_v_given_h(sample_h)
-            err= np.sum((visible_trainset-sample_v)**2)
+            err= np.linalg.norm(visible_trainset-sample_v)
             print(err)
             # print progress
 
