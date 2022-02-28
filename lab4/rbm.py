@@ -84,10 +84,9 @@ class RestrictedBoltzmannMachine():
 
         for it in range(n_iterations):
             #we have to update according to each sample we get:
+
             for sample_nr in range(0,n_samples,self.batch_size):
-                #samp = visible_trainset[(sample_nr):(sample_nr + self.batch_size)]
                 samp = visible_trainset[sample_nr: min(sample_nr + self.batch_size, n_samples)]
-                #gibbs_sampling
                 prob_h, sample_h_1 = self.get_h_given_v(samp)
 
                 prob_v, sample_v = self.get_v_given_h(sample_h_1)
