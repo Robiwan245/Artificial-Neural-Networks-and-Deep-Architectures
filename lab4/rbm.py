@@ -68,7 +68,7 @@ class RestrictedBoltzmannMachine():
         return
 
         
-    def cd1(self,visible_trainset, n_iterations=10000):
+    def cd1(self,visible_trainset, n_iterations=10):
         
         """Contrastive Divergence with k=1 full alternating Gibbs sampling
 
@@ -86,16 +86,19 @@ class RestrictedBoltzmannMachine():
             #we have to update according to each sample we get:
             for sample_nr in range(n_samples//self.batch_size):
                 samp = visible_trainset[(sample_nr * self.batch_size):(sample_nr * self.batch_size + self.batch_size)]
-
                 prob_h, sample_h_1 = self.get_h_given_v(samp)
                 prob_v, sample_v = self.get_v_given_h(sample_h_1)
                 prob_h, sample_h = self.get_h_given_v(sample_v)
-
                 self.update_params(samp,sample_h_1,prob_v,prob_h)
-            
-            if it % self.rf["period"] == 0 and self.is_bottom:
-                viz_rf(weights=self.weight_vh[:,self.rf["ids"]].reshape((self.image_size[0],self.image_size[1],-1)), it=it, grid=self.rf["grid"])
 
+            if it % 5 == 0 and self.is_bottom:
+                viz_rf(weights=self.weight_vh[:,self.rf["ids"]].reshape((self.image_size[0],self.image_size[1],-1)), it=it, grid=self.rf["grid"])
+            #reconstraction error
+
+            prob_h, sample_h = self.get_h_given_v(visible_trainset)
+            prob_v, sample_v = self.get_v_given_h(sample_h)
+            err= np.sum((visible_trainset-sample_v)**2)
+            print(err)
             # print progress
 
             if it % self.print_period == 0 :
@@ -118,9 +121,9 @@ class RestrictedBoltzmannMachine():
            all args have shape (size of mini-batch, size of respective layer)
         """
 
-        self.delta_bias_v = self.delta_bias_v * self.momentum * self.learning_rate *(np.mean(v_0) - np.mean(v_k))
-        self.delta_weight_vh = self.delta_weight_vh * self.momentum * self.learning_rate/self.batch_size*(np.dot(np.transpose(v_0),h_0)- np.dot(np.transpose(v_k),h_k) - self.weight_vh)
-        self.delta_bias_h = self.delta_bias_h * self.momentum * self.learning_rate *(np.mean(h_0) - np.mean(h_k))
+        self.delta_bias_v = self.delta_bias_v * self.momentum + self.learning_rate * np.sum(v_0 - v_k)/self.batch_size#(np.mean(v_0) - np.mean(v_k))
+        self.delta_weight_vh = self.delta_weight_vh * self.momentum + self.learning_rate*((np.dot(np.transpose(v_0),h_0)- np.dot(np.transpose(v_k),h_k))/self.batch_size)
+        self.delta_bias_h = self.delta_bias_h * self.momentum + self.learning_rate * np.sum(h_0-h_k)/self.batch_size#(np.mean(h_0) - np.mean(h_k))
         
         self.bias_v += self.delta_bias_v
         self.weight_vh += self.delta_weight_vh
