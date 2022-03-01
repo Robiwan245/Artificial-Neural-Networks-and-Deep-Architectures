@@ -101,8 +101,8 @@ class RestrictedBoltzmannMachine():
             prob_v, sample_v = self.get_v_given_h(sample_h)
             # print progress
 
-            if it % self.print_period == 0 :
-                print ("iteration=%7d recon_loss=%4.4f"%(it, np.linalg.norm(visible_trainset - prob_v)*(1/n_samples)))
+
+            print ("iteration=%7d recon_loss=%4.4f"%(it, np.linalg.norm(visible_trainset - prob_v)))
         return
     
 
@@ -173,8 +173,8 @@ class RestrictedBoltzmannMachine():
             to get activities. The probabilities as well as activities can then be concatenated back into a normal visible layer.
             """
             support = self.bias_v + np.dot(hidden_minibatch, np.transpose(self.weight_vh))
-            prob_v = np.array(shape = support.shape)
-            sample_v = np.array(shape=support.shape)
+            prob_v = np.ndarray(shape = support.shape)
+            sample_v = np.ndarray(shape=support.shape)
 
             prob_v[:, :-self.n_labels] = sigmoid(support[:, :-self.n_labels])
             sample_v[:, :-self.n_labels] = sample_binary(prob_v[:, :-self.n_labels])
@@ -237,7 +237,6 @@ class RestrictedBoltzmannMachine():
         
         assert self.weight_h_to_v is not None
         
-        n_samples = hidden_minibatch.shape[0]
         support = self.bias_v + np.dot(hidden_minibatch, np.transpose(self.weight_h_to_v))
         
         if self.is_top:
@@ -252,8 +251,8 @@ class RestrictedBoltzmannMachine():
             # this case should never be executed : when the RBM is a part of a DBN and is at the top, it will have not have directed connections.
             # Appropriate code here is to raise an error (replace pass below)
 
-            prob_v = np.array(shape=support.shape)
-            sample_v = np.array(shape=support.shape)
+            prob_v = np.ndarray(shape=support.shape)
+            sample_v = np.ndarray(shape=support.shape)
 
             prob_v[:, :-self.n_labels] = sigmoid(support[:, :-self.n_labels])
             sample_v[:, :-self.n_labels] = sample_binary(prob_v[:, :-self.n_labels])

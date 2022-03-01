@@ -12,7 +12,7 @@ if __name__ == "__main__":
     print ("\nStarting a Restricted Boltzmann Machine..")
 
     rbm = RestrictedBoltzmannMachine(ndim_visible=image_size[0]*image_size[1],
-                                     ndim_hidden=500,
+                                     ndim_hidden=200,
                                      is_bottom=True,
                                      image_size=image_size,
                                      is_top=False,
@@ -20,8 +20,8 @@ if __name__ == "__main__":
                                      batch_size=20
     )
     
-    rbm.cd1(visible_trainset=train_imgs, n_iterations=1)
-    
+    rbm.cd1(visible_trainset=train_imgs, n_iterations=20)
+
     ''' deep- belief net '''
 
     print ("\nStarting a Deep Belief Net..")
@@ -34,7 +34,7 @@ if __name__ == "__main__":
     
     ''' greedy layer-wise training '''
 
-    dbn.train_greedylayerwise(vis_trainset=train_imgs, lbl_trainset=train_lbls, n_iterations=10000)
+    dbn.train_greedylayerwise(vis_trainset=train_imgs, lbl_trainset=train_lbls, n_iterations=15)
 
     dbn.recognize(train_imgs, train_lbls)
     

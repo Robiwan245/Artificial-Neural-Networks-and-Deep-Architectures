@@ -66,16 +66,19 @@ class DeepBeliefNet():
         vis = true_img # visible layer gets the image data
         
         lbl = np.ones(true_lbl.shape)/10. # start the net by telling you know nothing about labels        
-        
+        n_lbl = lbl.shape[1]
         # [TODO TASK 4.2] fix the image data in the visible layer and drive the network bottom to top. In the top RBM, run alternating Gibbs sampling \
         # and read out the labels (replace pass below and 'predicted_lbl' to your predicted labels).
         # NOTE : inferring entire train/test set may require too much compute memory (depends on your system). In that case, divide into mini-batches.
-        
+        prob_h, sample_h = self.rbm_stack["vis--hid"].get_h_given_v_dir(vis)
+        prob_h_2, sample_h_2 = self.rbm_stack["hid--pen"].get_h_given_v_dir(sample_h)
+        sample_v = np.hstack((sample_h_2, lbl))
+
         for _ in range(self.n_gibbs_recog):
+            prob_h, sample_h = self.rbm_stack["pen+lbl--top"].get_h_given_v(sample_v)
+            prob_v, sample_v = self.rbm_stack["pen+lbl--top"].get_v_given_h(sample_h)
 
-            pass
-
-        predicted_lbl = np.zeros(true_lbl.shape)
+        predicted_lbl = sample_v[:, -n_lbl:]
             
         print ("accuracy = %.2f%%"%(100.*np.mean(np.argmax(predicted_lbl,axis=1)==np.argmax(true_lbl,axis=1))))
         
@@ -136,29 +139,34 @@ class DeepBeliefNet():
             self.loadfromfile_rbm(loc="trained_rbm",name="pen+lbl--top")        
 
         except IOError :
-
-            # [TODO TASK 4.2] use CD-1 to train all RBMs greedily
-        
             print ("training vis--hid")
             """ 
             CD-1 training for vis--hid 
-            """            
+            """
+
+            self.rbm_stack["vis--hid"].cd1(vis_trainset, n_iterations)
             self.savetofile_rbm(loc="trained_rbm",name="vis--hid")
+            prob_h, sample_h = self.rbm_stack["vis--hid"].get_h_given_v(vis_trainset)
+            self.rbm_stack["vis--hid"].untwine_weights()
 
             print ("training hid--pen")
             """ 
             CD-1 training for hid--pen 
-            """            
-            self.rbm_stack["vis--hid"].untwine_weights()            
-            self.savetofile_rbm(loc="trained_rbm",name="hid--pen")            
+            """
+
+            self.rbm_stack["hid--pen"].cd1(sample_h,n_iterations)
+            self.savetofile_rbm(loc="trained_rbm", name="hid--pen")
+            prob_h_2, sample_h_2 = self.rbm_stack["hid--pen"].get_h_given_v(sample_h)
+            self.rbm_stack["hid--pen"].untwine_weights()
 
             print ("training pen+lbl--top")
             """ 
             CD-1 training for pen+lbl--top 
             """
-            self.rbm_stack["hid--pen"].untwine_weights()
-            self.savetofile_rbm(loc="trained_rbm",name="pen+lbl--top")            
 
+            samp_label_concat = np.hstack((sample_h_2, lbl_trainset))
+            self.rbm_stack["pen+lbl--top"].cd1(samp_label_concat,n_iterations)
+            self.savetofile_rbm(loc="trained_rbm",name="pen+lbl--top")
         return    
 
     def train_wakesleep_finetune(self, vis_trainset, lbl_trainset, n_iterations):
