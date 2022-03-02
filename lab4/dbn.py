@@ -113,16 +113,19 @@ class DeepBeliefNet():
         prob_top_visible = np.random.uniform(0,1,(lbl.shape[0], top.bias_v.shape[0]))
         top_visible = sample_binary(prob_top_visible)
 
+        prob_top_visible[:, -n_labels:] = lbl
+        top_visible[:, -n_labels:] = lbl
+
         for _ in range(self.n_gibbs_gener):
+            prob_top_hidden,sample_top_hidden = top.get_h_given_v(prob_top_visible)
+            prob_top_visible,top_visible =top.get_v_given_h(prob_top_hidden)
 
-            prob_top_visible[:, -n_labels:] = lbl
-            top_visible[:, -n_labels:] = lbl
+            _, sample_pen_v = pen.get_v_given_h_dir(top_visible[:, :-n_labels])
+            vis , _ = hid.get_v_given_h_dir(sample_pen_v)
+            records.append( [ ax.imshow(vis.reshape(self.image_size), cmap="bwr", vmin=0, vmax=1, animated=True, interpolation=None) ] )
 
-            _,sample_top_hidden = top.get_h_given_v(top_visible)
-            prob_top_visible,top_visible =top.get_v_given_h(sample_top_hidden)
-
-        _, sample_pen_v = pen.get_v_given_h_dir(prob_top_visible[:, :-n_labels])
-        _, vis = hid.get_v_given_h_dir(sample_pen_v)
+        _, sample_pen_v = pen.get_v_given_h_dir(top_visible[:, :-n_labels])
+        vis , _ = hid.get_v_given_h_dir(sample_pen_v)
 
         records.append( [ ax.imshow(vis.reshape(self.image_size), cmap="bwr", vmin=0, vmax=1, animated=True, interpolation=None) ] )
             
