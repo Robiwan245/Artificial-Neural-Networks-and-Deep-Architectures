@@ -105,19 +105,24 @@ class DeepBeliefNet():
 
         # [TODO TASK 4.2] fix the label in the label layer and run alternating Gibbs sampling in the top RBM. From the top RBM, drive the network \ 
         # top to the bottom visible layer (replace 'vis' from random to your generated visible layer).
+        top = self.rbm_stack["pen+lbl--top"]
+        pen = self.rbm_stack["hid--pen"]
+        hid =  self.rbm_stack["vis--hid"]
 
-        prob_top_visible = np.random.uniform(0,1,(lbl.shape[0], self.rbm_stack["pen+lbl--top"].bias_v.shape[0]))
+
+        prob_top_visible = np.random.uniform(0,1,(lbl.shape[0], top.bias_v.shape[0]))
         top_visible = sample_binary(prob_top_visible)
-            
+
         for _ in range(self.n_gibbs_gener):
 
+            prob_top_visible[:, -n_labels:] = lbl
             top_visible[:, -n_labels:] = lbl
 
-            _,sample_top_h = self.rbm_stack["pen+lbl--top"].get_h_given_v(top_visible)
-            _,sample_top_v =self.rbm_stack["pen+lbl--top"].get_v_given_h(sample_top_h)
+            _,sample_top_hidden = top.get_h_given_v(top_visible)
+            prob_top_visible,top_visible =top.get_v_given_h(sample_top_hidden)
 
-        _, sample_pen_v = self.rbm_stack["hid--pen"].get_v_given_h_dir(sample_top_v)
-        _, vis = self.rbm_stack["vis--hid"].get_v_given_h_dir(sample_pen_v)
+        _, sample_pen_v = pen.get_v_given_h_dir(prob_top_visible[:, :-n_labels])
+        _, vis = hid.get_v_given_h_dir(sample_pen_v)
 
         records.append( [ ax.imshow(vis.reshape(self.image_size), cmap="bwr", vmin=0, vmax=1, animated=True, interpolation=None) ] )
             

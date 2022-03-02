@@ -237,7 +237,7 @@ class RestrictedBoltzmannMachine():
         
         assert self.weight_h_to_v is not None
         
-        support = self.bias_v + np.dot(hidden_minibatch, np.transpose(self.weight_h_to_v))
+        support = self.bias_v + np.dot(hidden_minibatch, self.weight_h_to_v)
         
         if self.is_top:
 
