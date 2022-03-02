@@ -102,7 +102,7 @@ class RestrictedBoltzmannMachine():
             # print progress
 
 
-            print ("iteration=%7d recon_loss=%4.4f"%(it, np.linalg.norm(visible_trainset - prob_v)))
+            print ("iteration=%7d recon_loss=%4.4f"%(it, (1/self.batch_size) * np.linalg.norm(visible_trainset - prob_v)))
         return
     
 
