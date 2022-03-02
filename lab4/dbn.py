@@ -1,5 +1,6 @@
 from util import *
 from rbm import RestrictedBoltzmannMachine
+import matplotlib.pyplot as plt
 
 class DeepBeliefNet():    
 
@@ -162,7 +163,12 @@ class DeepBeliefNet():
             CD-1 training for vis--hid 
             """
 
-            self.rbm_stack["vis--hid"].cd1(vis_trainset, n_iterations)
+            recons = self.rbm_stack["vis--hid"].cd1(vis_trainset, n_iterations)
+            plt.plot(recons)
+            plt.title("vis--hid RBM")
+            plt.xlabel("Iterations")
+            plt.ylabel("Reconstruction error")
+            plt.show()
             self.savetofile_rbm(loc="trained_rbm",name="vis--hid")
             prob_h, sample_h = self.rbm_stack["vis--hid"].get_h_given_v(vis_trainset)
             self.rbm_stack["vis--hid"].untwine_weights()
@@ -172,7 +178,12 @@ class DeepBeliefNet():
             CD-1 training for hid--pen 
             """
 
-            self.rbm_stack["hid--pen"].cd1(sample_h,n_iterations)
+            recons = self.rbm_stack["hid--pen"].cd1(sample_h,n_iterations)
+            plt.plot(recons)
+            plt.title("hid--pen RBM")
+            plt.xlabel("Iterations")
+            plt.ylabel("Reconstruction error")
+            plt.show()
             self.savetofile_rbm(loc="trained_rbm", name="hid--pen")
             prob_h_2, sample_h_2 = self.rbm_stack["hid--pen"].get_h_given_v(sample_h)
             self.rbm_stack["hid--pen"].untwine_weights()
@@ -183,7 +194,12 @@ class DeepBeliefNet():
             """
 
             samp_label_concat = np.hstack((sample_h_2, lbl_trainset))
-            self.rbm_stack["pen+lbl--top"].cd1(samp_label_concat,n_iterations)
+            recons = self.rbm_stack["pen+lbl--top"].cd1(samp_label_concat,n_iterations)
+            plt.plot(recons)
+            plt.title("pen+lbl--top RBM")
+            plt.xlabel("Iterations")
+            plt.ylabel("Reconstruction error")
+            plt.show()
             self.savetofile_rbm(loc="trained_rbm",name="pen+lbl--top")
         return    
 

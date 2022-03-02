@@ -81,6 +81,7 @@ class RestrictedBoltzmannMachine():
         
         n_samples = visible_trainset.shape[0]
         err = 0
+        recons = []
 
         for it in range(n_iterations):
             #we have to update according to each sample we get:
@@ -100,10 +101,10 @@ class RestrictedBoltzmannMachine():
             prob_h, sample_h = self.get_h_given_v(visible_trainset)
             prob_v, sample_v = self.get_v_given_h(sample_h)
             # print progress
-
+            recons.append((1/self.batch_size) * np.linalg.norm(visible_trainset - prob_v))
 
             print ("iteration=%7d recon_loss=%4.4f"%(it, (1/self.batch_size) * np.linalg.norm(visible_trainset - prob_v)))
-        return
+        return recons
     
 
     def update_params(self,v_0,h_0,v_k,h_k):
